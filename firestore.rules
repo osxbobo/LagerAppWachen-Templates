@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isStaff() {
+      return request.auth != null &&
+             request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Users bleiben auf Root-Ebene
+    match /users/{id} {
+      allow read, write: if isStaff();
+    }
+
+    // Mitarbeiter auf Root-Ebene (PIN-Login)
+    match /mitarbeiter/{id} {
+      allow read: if isAuth();
+      allow write: if isStaff();
+    }
+
+    // Wachen-Daten unter /wachen/{wacheId}/
+    match /wachen/{wacheId}/artikel/{id} {
+      allow read: if true;
+      allow create, delete: if isStaff();
+      allow update: if isAuth();
+    }
+
+    match /wachen/{wacheId}/bereiche/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /wachen/{wacheId}/config/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /wachen/{wacheId}/bestellungen/{id} {
+      allow read, create: if true;
+      allow update, delete: if isStaff();
+    }
+
+    match /wachen/{wacheId}/bestellungen_draft/{id} {
+      allow read, write: if true;
+    }
+
+    match /wachen/{wacheId}/bestellungen_session/{sessionId} {
+      allow read, write: if true;
+    }
+
+    match /wachen/{wacheId}/warenkorb/{id} {
+      allow read, write: if true;
+    }
+
+    match /wachen/{wacheId}/mitarbeiter/{id} {
+      allow read: if isAuth();
+      allow create, delete: if isStaff();
+      allow update: if isStaff() ||
+                       (isAuth() &&
+                        request.resource.data.diff(resource.data)
+                          .affectedKeys().hasOnly(['pinHash', 'avatarUrl']));
+    }
+
+  }
+}

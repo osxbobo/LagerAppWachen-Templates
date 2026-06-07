@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#F26B2E">
+  <title>Verfallsscan – LAGER//APP</title>
+  <link rel="manifest" href="../manifest.json">
+  <link rel="apple-touch-icon" href="../icons/icon-192.png">
+  <!-- ZXing (UMD global – must remain a classic script) -->
+  <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/mitarbeiter.css">
+  <link rel="stylesheet" href="../css/scanner.css">
+</head>
+<body>
+
+  <!-- ── Full-screen camera overlay ── -->
+  <div id="cam-overlay" class="cam-fs hidden">
+    <div class="cam-video-area">
+      <video id="video" playsinline autoplay muted></video>
+      <!-- Status pill -->
+      <div class="cam-status-row">
+        <div class="cam-pill">
+          <span class="cam-dot"></span>
+          <span id="cam-status-text">Scanne GS1-DataMatrix</span>
+        </div>
+        <button class="cam-close-btn">✕</button>
+      </div>
+      <!-- Reticle 240×240 -->
+      <div class="cam-reticle-wrap">
+        <div class="cam-reticle">
+          <svg class="corner tl" viewBox="0 0 32 32" fill="none"><path d="M0 24V0h24" stroke="#F26B2E" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="corner tr" viewBox="0 0 32 32" fill="none"><path d="M32 24V0H8"  stroke="#F26B2E" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="corner bl" viewBox="0 0 32 32" fill="none"><path d="M0 8v24h24"  stroke="#F26B2E" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="corner br" viewBox="0 0 32 32" fill="none"><path d="M32 8v24H8"  stroke="#F26B2E" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="scan-line"></div>
+        </div>
+        <div class="cam-hint-text">Code zentrieren · Halten</div>
+      </div>
+    </div>
+
+    <!-- Glass bottom sheet -->
+    <div class="scan-sheet">
+      <div class="sheet-drag"></div>
+      <!-- Scan result (shown after scan) -->
+      <div class="sheet-result" id="sheet-result">
+        <div class="sheet-art-photo" id="sheet-art-photo">📦</div>
+        <div class="sheet-art-info">
+          <div class="sheet-gtin" id="sheet-gtin"></div>
+          <div class="sheet-artname" id="sheet-artname">Artikel suchen…</div>
+          <div class="sheet-art-chip-row" id="sheet-art-chip"></div>
+        </div>
+      </div>
+      <!-- Fields -->
+      <div class="sheet-fields">
+        <div class="sheet-field">
+          <label>Charge / LOT</label>
+          <input type="text" id="sheet-lot" autocomplete="off" maxlength="50" placeholder="z.B. 140211">
+        </div>
+        <div class="sheet-field">
+          <label>Verfallsdatum</label>
+          <input type="text" id="sheet-verfall" inputmode="numeric" maxlength="10" placeholder="JJJJ-MM-TT">
+          <div class="sheet-verfall-info" id="sheet-verfall-info"></div>
+        </div>
+      </div>
+      <!-- Actions -->
+      <div class="sheet-actions">
+        <button class="sheet-ctrl" id="sheet-flip" title="Kamera wechseln">
+          <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h5v5M16 16h-5v-5M4 4l4 4M16 16l-4-4M4 12a8 8 0 0 1 8-8M16 8a8 8 0 0 1-8 8"/></svg>
+        </button>
+        <button class="sheet-ctrl" id="sheet-light" title="Licht">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>
+        </button>
+        <button class="sheet-save" id="sheet-save-btn">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10l4 4 6-6"/></svg>
+          Charge speichern
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <header class="m-nav">
+    <button class="m-back" title="Lagersuche">
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l-5 5 5 5"/></svg>
+    </button>
+    <span class="la-wordmark">LAGER<span class="slash">//</span>APP</span>
+    <button class="wache-pill hidden" id="wache-pill"></button>
+    <div class="m-nav-right">
+      <a id="panel-back-btn" class="m-panel-btn" href="portal.html">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="16" height="13" rx="2"/><path d="M6 7h8M6 10h5"/></svg>
+        Panel
+      </a>
+      <button class="m-theme" id="theme-btn">☀️</button>
+    </div>
+  </header>
+
+  <div class="s-page">
+
+    <!-- Camera + BT controls -->
+    <div class="s-toggle-row">
+      <button class="s-toggle" id="btn-cam">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7a2 2 0 0 1 2-2h1l2-2h6l2 2h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z"/><circle cx="10" cy="10.5" r="2.5"/></svg>
+        Kamera öffnen
+      </button>
+      <button class="s-toggle" id="btn-bt">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6l6 6-3 3V4l3 3-6 6"/></svg>
+        Bluetooth
+      </button>
+    </div>
+
+    <!-- BT hint -->
+    <div class="bt-hint" id="bt-hint">
+      Bluetooth aktiv – Code scannen um Felder automatisch auszufüllen
+    </div>
+
+    <!-- Charge erfassen -->
+    <div class="s-card">
+      <div class="s-card-head">Charge erfassen</div>
+      <div class="s-card-body">
+
+        <!-- Artikel -->
+        <div class="s-field">
+          <div class="s-label">Artikel</div>
+          <div id="artikel-sel-wrap" class="hidden">
+            <div class="artikel-sel">
+              <span id="artikel-sel-name"></span>
+              <button id="artikel-clear-btn">✕</button>
+            </div>
+          </div>
+          <div id="artikel-search-wrap">
+            <input type="text" id="inp-search" class="s-inp" placeholder="Artikel suchen…"
+              autocomplete="off">
+            <div class="suggestions" id="suggestions"></div>
+          </div>
+        </div>
+
+        <!-- LOT -->
+        <div class="s-field">
+          <div class="s-label">Charge / LOT</div>
+          <input type="text" id="inp-lot" class="s-inp" placeholder="z. B. 140211" autocomplete="off" maxlength="50">
+        </div>
+
+        <!-- Verfall -->
+        <div class="s-field">
+          <div class="s-label">Verfallsdatum</div>
+          <input type="text" id="inp-verfall" class="s-inp" inputmode="numeric"
+            placeholder="JJJJ-MM-TT" maxlength="10">
+          <div class="verfall-info" id="verfall-info"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="s-btn-row">
+          <button class="s-reset">↺ Neu</button>
+          <button class="s-save">
+            <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10l4 4 6-6"/></svg>
+            Charge speichern
+          </button>
+        </div>
+
+        <!-- Chargen Liste -->
+        <div id="chargen-wrap" class="hidden">
+          <div class="s-label chargen-label">Gespeicherte Chargen</div>
+          <div id="chargen-list" class="chargen-inner"></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="../js/scanner.js"></script>
+  <script src="../js/pwa.js"></script>
+  <script>
+    (function() {
+      const L = {}; // Wachen-Labels hier eintragen (z. B. w1_meinstadt:'W1 Meine Stadt')
+      const w = localStorage.getItem('activeWache');
+      const p = document.getElementById('wache-pill');
+      const city = w && L[w] ? L[w].split(' ').slice(1).join(' ') : '';
+      if (p && city) { p.textContent = city; p.classList.remove('hidden'); p.onclick = function(){ localStorage.removeItem('activeWache'); location.href='../index.html'; }; }
+    })();
+  </script>
+</body>
+</html>

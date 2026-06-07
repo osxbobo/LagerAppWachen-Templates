@@ -1,0 +1,761 @@
+﻿<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="apple-touch-icon" href="../icons/icon-192.png">
+  <meta name="theme-color" content="#F26B2E">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LAGER//APP">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Admin – LAGER//APP</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-page">
+
+  <!-- NAVBAR -->
+  <nav class="a-nav">
+    <button class="a-menu-btn" data-action="open-bottom-sheet" aria-label="Menü">☰</button>
+    <a href="../index.html" class="m-back" title="Zur Lagersuche">
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l-5 5 5 5"/></svg>
+    </a>
+    <a href="../index.html" class="a-wordmark" style="text-decoration:none;color:inherit;">LAGER<span class="slash">//</span>APP</a>
+    <button class="wache-pill hidden" id="wache-pill"></button>
+    <div class="a-nav-right">
+      <span id="nav-user" class="a-nav-user" style="display:none;"></span>
+      <span class="a-badge">ADMIN</span>
+      <button class="a-btn a-ma-link" data-action="go-to-mitarbeiter">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        Mitarbeiter
+      </button>
+      <a href="portal.html" class="a-btn a-portal-link">Wachenleiter</a>
+      <button class="a-btn logout" data-action="logout">Abmelden</button>
+      <button class="a-theme" id="theme-toggle">☀️</button>
+    </div>
+  </nav>
+
+  <!-- AUTH LOADING -->
+  <div id="auth-loading" class="loading-state"><div class="spinner"></div><span>Authentifizierung...</span></div>
+
+  <!-- BOTTOM NAV (Mobile) -->
+  <nav class="bottom-nav hidden" id="bottom-nav">
+    <button class="bottom-tab active" data-section="dashboard" data-action="show-section">
+      <span class="bottom-tab-icon">📊</span>
+      <span class="bottom-tab-label">Dashboard</span>
+    </button>
+    <button class="bottom-tab" data-section="artikel" data-action="show-section">
+      <span class="bottom-tab-icon">📦</span>
+      <span class="bottom-tab-label">Artikel</span>
+    </button>
+    <button class="bottom-tab" data-section="users" data-action="show-section">
+      <span class="bottom-tab-icon">👥</span>
+      <span class="bottom-tab-label">Accounts</span>
+    </button>
+    <button class="bottom-tab" id="bottom-more-tab" data-action="open-bottom-sheet">
+      <span class="bottom-tab-icon">⋯</span>
+      <span class="bottom-tab-label">Mehr</span>
+    </button>
+  </nav>
+
+  <!-- BOTTOM SHEET -->
+  <div class="bottom-sheet-backdrop hidden" id="bottom-sheet-backdrop" data-action="close-bottom-sheet"></div>
+  <div class="bottom-sheet" id="bottom-sheet">
+    <div class="bottom-sheet-handle"></div>
+    <div class="bottom-sheet-title">Navigation</div>
+    <button class="bottom-sheet-item" data-action="go-to-mitarbeiter">
+      <span class="bottom-sheet-item-icon">👤</span> Zum Mitarbeiterbereich
+    </button>
+    <button class="bottom-sheet-item" data-action="goto-lager">
+      <span class="bottom-sheet-item-icon">🔍</span> Zur Lagersuche
+    </button>
+    <button class="bottom-sheet-item" data-section="bereiche" data-action="show-section">
+      <span class="bottom-sheet-item-icon">🏠</span> Bereiche
+    </button>
+    <button class="bottom-sheet-item" data-section="fotos" data-action="show-section">
+      <span class="bottom-sheet-item-icon">📸</span> Fotos & Bilder
+    </button>
+    <button class="bottom-sheet-item" data-section="ss-fotos" data-action="show-section">
+      <span class="bottom-sheet-item-icon">🃏</span> StockSwipe Fotos
+    </button>
+    <button class="bottom-sheet-item" data-section="backup" data-action="show-section">
+      <span class="bottom-sheet-item-icon">💾</span> Backup & Import
+    </button>
+    <button class="bottom-sheet-item" data-section="diagnose" data-action="show-section">
+      <span class="bottom-sheet-item-icon">🩺</span> Diagnose
+    </button>
+    <button class="bottom-sheet-item" data-action="goto-scanner">
+      <span class="bottom-sheet-item-icon">📷</span> Charge-Scanner
+    </button>
+    <button class="bottom-sheet-item" data-action="logout" style="color:var(--crit);">
+      <span class="bottom-sheet-item-icon">↪</span> Abmelden
+    </button>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="admin-layout hidden" id="admin-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+
+      <div class="sidebar-workspace">
+        <div class="sidebar-ws-icon">A</div>
+        <div>
+          <div class="sidebar-ws-name">Admin</div>
+          <div class="sidebar-ws-sub">Systemverwaltung</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Übersicht</div>
+        <div class="sidebar-item active" id="nav-dashboard" data-action="show-section" data-section="dashboard">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="5" height="5" rx="1"/><rect x="8" y="1" width="5" height="5" rx="1"/><rect x="1" y="8" width="5" height="5" rx="1"/><rect x="8" y="8" width="5" height="5" rx="1"/></svg>
+          Dashboard
+        </div>
+
+        <div class="sidebar-section-label">Lager</div>
+        <div class="sidebar-item" id="nav-artikel" data-action="show-section" data-section="artikel">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 1.5l5 3v5l-5 3-5-3v-5l5-3z"/><path d="M2 4.5l5 3 5-3M7 7.5V13"/></svg>
+          Artikelverwaltung
+        </div>
+        <div class="sidebar-item" id="nav-bereiche" data-action="show-section" data-section="bereiche">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5 7 2.5l5 4V12a1 1 0 0 1-1 1H8.5v-3h-3v3H3a1 1 0 0 1-1-1V6.5z"/></svg>
+          Bereiche
+        </div>
+        <div class="sidebar-item" id="nav-fotos" data-action="show-section" data-section="fotos">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4z"/><circle cx="7" cy="7" r="2"/><path d="M10 4h.01"/></svg>
+          Fotos &amp; Bilder
+        </div>
+        <div class="sidebar-item" id="nav-ss-fotos" data-action="show-section" data-section="ss-fotos">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2.5" width="8" height="11" rx="1"/><rect x="4.5" y="0.5" width="8" height="11" rx="1"/></svg>
+          StockSwipe Fotos
+        </div>
+
+        <div class="sidebar-section-label">System</div>
+        <div class="sidebar-item" id="nav-users" data-action="show-section" data-section="users">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="4.5" r="2.5"/><path d="M1 12c.5-2.5 2-3.5 4.5-3.5s4 1 4.5 3.5"/><path d="M10 2a2.5 2.5 0 0 1 0 5M12.5 12c-.3-2-1.5-3-2.5-3.5"/></svg>
+          Accounts
+        </div>
+        <div class="sidebar-item" id="nav-diagnose" data-action="show-section" data-section="diagnose">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5.5"/><path d="M7 4.5v3l2 1.5"/></svg>
+          Diagnose
+        </div>
+        <div class="sidebar-item" id="nav-backup" data-action="show-section" data-section="backup">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v1.5a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V10"/><path d="M7 2v8M5 8l2 2 2-2"/></svg>
+          Backup &amp; Import
+        </div>
+        <div class="sidebar-item" data-action="goto-scanner">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4.5V3a1 1 0 0 1 1-1h1.5M8.5 2H11a1 1 0 0 1 1 1v1.5M12 9.5V11a1 1 0 0 1-1 1H9.5M5.5 12H4a1 1 0 0 1-1-1V9.5M4 7h6"/></svg>
+          Charge-Scanner
+        </div>
+        <div class="sidebar-item" data-action="goto-portal">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="12" height="9" rx="1.5"/><path d="M1 6h12M5 6v6"/></svg>
+          Wachenleiter-Portal
+        </div>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-user-pill">
+          <div class="sidebar-user-avatar" id="sidebar-user-avatar">A</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="sidebar-user-name">Admin</div>
+            <div class="sidebar-user-role">Administrator</div>
+          </div>
+          <button class="sidebar-logout-btn" data-action="logout" title="Abmelden">↪</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="admin-content">
+
+      <!-- ── DASHBOARD ── -->
+      <section class="content-section active" id="section-dashboard">
+        <div class="page-header">
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">Übersicht aller wichtigen Kennzahlen</div>
+        </div>
+        <div class="kpi-grid dashboard-kpi-row">
+          <div class="kpi-card kpi-orange">
+            <div class="kpi-body">
+              <div class="kpi-value" id="stat-artikel">–</div>
+              <div class="kpi-label">Artikel (aktive Wache)</div>
+            </div>
+            <div class="kpi-icon">📦</div>
+          </div>
+          <div class="kpi-card kpi-blue">
+            <div class="kpi-body">
+              <div class="kpi-value" id="stat-bereiche">–</div>
+              <div class="kpi-label">Bereiche</div>
+            </div>
+            <div class="kpi-icon">🏠</div>
+          </div>
+          <div class="kpi-card kpi-green">
+            <div class="kpi-body">
+              <div class="kpi-value" id="stat-bestellungen">–</div>
+              <div class="kpi-label">Bestellungen</div>
+            </div>
+            <div class="kpi-icon">📋</div>
+          </div>
+          <div class="kpi-card kpi-yellow">
+            <div class="kpi-body">
+              <div class="kpi-value" id="stat-ohne-foto">–</div>
+              <div class="kpi-label">Ohne Foto</div>
+            </div>
+            <div class="kpi-icon">📸</div>
+          </div>
+        </div>
+
+        <!-- Alle-Wachen-Übersicht -->
+        <div class="table-wrap" style="margin-bottom:20px;">
+          <div class="dashboard-last-checks-header" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Alle Wachen im Überblick</span>
+            <button class="btn btn-ghost" style="font-size:0.72rem;height:28px;" onclick="loadAllWachenOverview()">🔄 Aktualisieren</button>
+          </div>
+          <div id="all-wachen-overview">
+            <div class="loading-state"><div class="spinner"></div><span style="font-size:0.82rem;color:var(--ink-3);">Lade alle Wachen…</span></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:0;">
+          <div class="table-wrap">
+            <div class="dashboard-last-checks-header">Letzte Lagerchecks (aktive Wache)</div>
+            <div id="dashboard-bestellungen"><div class="loading-state"><div class="spinner"></div></div></div>
+          </div>
+          <div class="table-wrap">
+            <div class="dashboard-last-checks-header" style="display:flex;align-items:center;justify-content:space-between;">
+              <span>Aktivitäts-Log</span>
+              <button class="btn btn-ghost" style="font-size:0.68rem;height:24px;padding:0 8px;" onclick="localStorage.removeItem('lagerapp-activity-log');renderActivityLog()">Leeren</button>
+            </div>
+            <div id="admin-activity-log"><div style="padding:12px 16px;font-size:0.82rem;color:var(--ink-3);">Noch keine Aktivitäten</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── ARTIKEL ── -->
+      <section class="content-section" id="section-artikel">
+        <div class="page-header">
+          <div class="artikel-header-row">
+            <div class="artikel-header-inner">
+              <div class="page-title">Artikelverwaltung</div>
+              <div class="page-sub">Artikel hinzufügen, bearbeiten und löschen</div>
+            </div>
+            <div class="artikel-new-btn-wrap" style="display:flex;gap:8px;align-items:center;">
+              <select class="form-input" style="font-size:0.78rem;" data-action="admin-wache-switch">
+                <!-- Wachen-Optionen werden dynamisch geladen -->
+              </select>
+              <button class="btn btn-primary" data-action="open-artikel-modal">+ Neuer Artikel</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <input type="text" class="form-input table-search" id="artikel-search" placeholder="🔍 Artikel suchen..." data-action="filter-artikel-search">
+            <select class="form-input" id="bereich-filter" data-action="filter-bereich" style="max-width:200px;">
+              <option value="">Alle Bereiche</option>
+            </select>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="table-card-mobile">
+              <thead>
+                <tr>
+                  <th>Artikel</th>
+                  <th>Standort</th>
+                  <th>MIN / MAX</th>
+                  <th>Foto</th>
+                  <th>Aktionen</th>
+                </tr>
+              </thead>
+              <tbody id="artikel-tbody">
+                <tr><td colspan="5"><div class="loading-state"><div class="spinner"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── BEREICHE ── -->
+      <section class="content-section" id="section-bereiche">
+        <div class="page-header">
+          <div class="bereiche-header-row">
+            <div>
+              <div class="page-title">Bereiche verwalten</div>
+              <div class="page-sub">Schränke, Regale und Lagerorte</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+              <select class="form-input" style="font-size:0.78rem;" data-action="admin-wache-switch">
+                <!-- Wachen-Optionen werden dynamisch geladen -->
+              </select>
+              <button class="btn btn-primary" data-action="open-bereich-modal">+ Neuer Bereich</button>
+            </div>
+          </div>
+        </div>
+        <div class="bereich-list" id="bereich-list">
+          <div class="loading-state"><div class="spinner"></div></div>
+        </div>
+      </section>
+
+      <!-- ── FOTOS ── -->
+      <section class="content-section" id="section-fotos">
+        <div class="page-header">
+          <div class="page-title">Fotos & Referenzbilder</div>
+          <div class="page-sub">Produktfotos und Lagerort-Fotos hochladen oder löschen</div>
+        </div>
+        <div class="fotos-filter-row">
+          <select id="foto-wache" class="form-input filter-select" data-action="filter-foto-wache">
+            <!-- Wachen-Optionen werden dynamisch geladen -->
+          </select>
+          <input type="text" id="foto-search" class="form-input filter-text" placeholder="Name oder LP suchen…" data-action="filter-foto">
+          <select id="foto-filter" class="form-input filter-select" data-action="filter-foto">
+            <option value="alle">Alle Artikel</option>
+            <option value="ohne-produkt">Ohne Produktfoto</option>
+            <option value="ohne-lager">Ohne Lagerortfoto</option>
+            <option value="ohne-beide">Ohne beide Fotos</option>
+            <option value="vollstaendig">Vollständig</option>
+          </select>
+          <select id="foto-bereich" class="form-input filter-select" data-action="filter-foto">
+            <option value="">Alle Bereiche</option>
+          </select>
+          <select id="foto-sort" class="form-input filter-select" data-action="filter-foto">
+            <option value="name">Name</option>
+            <option value="lp">Lagerort</option>
+          </select>
+        </div>
+        <div class="section-label mb-12" id="foto-grid-label">Artikel</div>
+        <div class="foto-grid" id="foto-grid"></div>
+        <input type="file" id="foto-file-input" accept="image/*" class="hidden">
+      </section>
+
+      <!-- ── STOCKSWIPE FOTOS ── -->
+      <section class="content-section" id="section-ss-fotos">
+        <div class="page-header">
+          <div class="page-title">StockSwipe Fotos</div>
+          <div class="page-sub">Karten-Fotos für StockSwipe separat verwalten (überschreibt nicht das allgemeine Produktfoto)</div>
+        </div>
+        <div class="ss-fotos-filter-row">
+          <select id="ss-foto-wache" class="form-input filter-select" data-action="filter-ss-foto-wache">
+            <!-- Wachen-Optionen werden dynamisch geladen -->
+          </select>
+          <input type="text" id="ss-foto-search" class="form-input filter-text" placeholder="Artikel suchen…" data-action="filter-ss-foto">
+          <select id="ss-foto-filter" class="form-input filter-select" data-action="filter-ss-foto">
+            <option value="alle">Alle Artikel</option>
+            <option value="ohne-ss">Ohne StockSwipe-Foto</option>
+            <option value="mit-ss">Mit StockSwipe-Foto</option>
+          </select>
+          <select id="ss-foto-bereich" class="form-input filter-select" data-action="filter-ss-foto">
+            <option value="">Alle Bereiche</option>
+          </select>
+        </div>
+        <div class="section-label mb-12" id="ss-foto-grid-label">Artikel</div>
+        <div class="foto-grid" id="ss-foto-grid"></div>
+        <input type="file" id="ss-foto-file-input" accept="image/*" class="hidden">
+      </section>
+
+      <!-- ── USERS ── -->
+      <section class="content-section" id="section-users">
+        <div class="page-header">
+          <div class="page-title">Account-Verwaltung</div>
+          <div class="page-sub">Wachenleiter & Admin Accounts</div>
+        </div>
+
+        <!-- Neuen Benutzer anlegen -->
+        <div class="users-new-card">
+          <div class="users-new-card-title">➕ Neuen Benutzer anlegen</div>
+          <div class="users-new-form">
+            <div class="form-group">
+              <label class="form-label">Name</label>
+              <input type="text" class="form-input" id="new-user-name" placeholder="Max Mustermann">
+            </div>
+            <div class="form-group">
+              <label class="form-label">E-Mail</label>
+              <input type="email" class="form-input" id="new-user-email" placeholder="max@drk-boeblingen.de">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Temporäres Passwort</label>
+              <input type="text" class="form-input" id="new-user-password" placeholder="mind. 6 Zeichen">
+              <div class="form-hint">Der Benutzer sollte das Passwort nach erstem Login ändern</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rolle</label>
+              <select class="form-input" id="new-user-role">
+                <option value="wachenleiter">Wachenleiter</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Heimat-Wache</label>
+              <select class="form-input" id="new-user-wache">
+                <option value="">— keine —</option>
+                <!-- Wachen-Optionen werden dynamisch geladen -->
+              </select>
+            </div>
+            <div id="new-user-msg" style="font-size:0.78rem;min-height:20px;"></div>
+            <button class="btn btn-primary" data-action="create-new-user" style="width:100%;">
+              👤 Benutzer anlegen
+            </button>
+          </div>
+        </div>
+
+        <!-- Bestehende Benutzer -->
+        <div class="users-existing-title">Bestehende Accounts</div>
+        <div class="user-list" id="user-list">
+          <div class="loading-state"><div class="spinner"></div></div>
+        </div>
+      </section>
+
+      <!-- ── BACKUP & IMPORT ── -->
+      <section class="content-section" id="section-backup">
+        <div class="page-header">
+          <div class="page-title">Backup & Import</div>
+          <div class="page-sub">Datenbank exportieren und importieren</div>
+        </div>
+
+        <!-- EXPORT -->
+        <div class="backup-card">
+          <div class="backup-card-title">📤 Aktive Wache exportieren</div>
+          <div class="backup-card-sub">
+            Exportiert Artikel, Bereiche und Konfiguration der aktuell gewählten Wache als JSON-Datei.
+          </div>
+          <div class="backup-stats-grid">
+            <div class="backup-stat-cell">
+              <div class="backup-stat-num" id="export-artikel-count">–</div>
+              <div class="backup-stat-lbl">Artikel</div>
+            </div>
+            <div class="backup-stat-cell">
+              <div class="backup-stat-num" id="export-bereiche-count">–</div>
+              <div class="backup-stat-lbl">Bereiche</div>
+            </div>
+            <div class="backup-stat-cell">
+              <div class="backup-stat-num" id="export-bestellungen-count">–</div>
+              <div class="backup-stat-lbl">Bestellungen</div>
+            </div>
+          </div>
+          <div class="backup-actions">
+            <button class="btn btn-primary" data-action="export-db" data-typ="komplett">📥 Komplett exportieren</button>
+            <button class="btn btn-ghost" data-action="export-db" data-typ="artikel">📦 Nur Artikel</button>
+            <button class="btn btn-ghost" data-action="export-db" data-typ="chargen">🗄️ Nur Chargen</button>
+          </div>
+        </div>
+
+        <!-- MITARBEITER EXPORT -->
+        <div class="backup-card">
+          <div class="backup-card-title">👥 Mitarbeiter exportieren</div>
+          <div class="backup-card-sub">
+            Exportiert alle Mitarbeiter-Stammdaten (Name, PIN, Wache) als JSON-Datei.
+          </div>
+          <div class="backup-stats-grid">
+            <div class="backup-stat-cell">
+              <div class="backup-stat-num" id="export-mitarbeiter-count">–</div>
+              <div class="backup-stat-lbl">Mitarbeiter</div>
+            </div>
+          </div>
+          <div class="backup-actions">
+            <button class="btn btn-primary" data-action="export-db" data-typ="mitarbeiter">📥 Mitarbeiter exportieren</button>
+          </div>
+        </div>
+
+        <!-- WACHEN EINZELN -->
+        <div class="backup-card">
+          <div class="backup-card-title">🏥 Wachen sichern</div>
+          <div class="backup-card-sub">
+            Exportiert eine einzelne Wache oder alle Wachen vollständig (Artikel, Bereiche, Konfiguration, Bestellungen).
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px;">
+            <select id="wachen-backup-select" class="form-input" style="flex:1;min-width:180px;">
+              <option value="alle">Alle Wachen</option>
+              <!-- Wachen-Optionen werden dynamisch geladen -->
+            </select>
+            <button class="btn btn-primary" data-action="export-wachen-select">📥 Exportieren</button>
+          </div>
+        </div>
+
+        <!-- IMPORT -->
+        <div class="backup-card">
+          <div class="backup-card-title">📤 Datenbank importieren</div>
+          <div class="backup-card-sub">
+            Importiert eine zuvor exportierte JSON-Datei. Wähle ob bestehende Daten ersetzt oder ergänzt werden sollen.
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="backup-drop-zone" data-action="open-import-file" id="drop-zone">
+              <div class="backup-drop-zone-icon">📁</div>
+              <div class="backup-drop-zone-title">JSON-Datei auswählen</div>
+              <div class="backup-drop-zone-hint">oder hier reinziehen</div>
+              <input type="file" id="import-file" accept=".json" class="hidden">
+            </div>
+
+            <div id="import-preview" class="hidden" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;">
+              <div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;">📋 Vorschau</div>
+              <div id="import-preview-content"></div>
+            </div>
+
+            <div class="backup-import-mode">
+              <div class="backup-import-mode-title">Import-Modus:</div>
+              <label>
+                <input type="radio" name="import-mode" value="merge" data-action="import-mode" checked>
+                <span><strong>Ergänzen</strong> – Neue Artikel hinzufügen, bestehende behalten</span>
+              </label>
+              <label>
+                <input type="radio" name="import-mode" value="replace" data-action="import-mode">
+                <span><strong>Ersetzen</strong> – Alle bestehenden Daten werden überschrieben</span>
+              </label>
+            </div>
+
+            <div class="alert alert-warn hidden" id="import-warn" style="font-size:0.78rem;">
+              ⚠️ Im Ersetzen-Modus werden ALLE bestehenden Artikel und Bereiche gelöscht!
+            </div>
+
+            <div id="import-progress" class="hidden" style="display:flex;flex-direction:column;gap:8px;">
+              <div class="progress-wrap"><div class="progress-fill" id="import-progress-fill" style="width:0%"></div></div>
+              <div class="backup-progress-text" id="import-progress-text">0%</div>
+              <div class="backup-progress-log" id="import-log"></div>
+            </div>
+
+            <button class="btn btn-primary" id="btn-import-start" data-action="start-import" disabled
+              style="opacity:0.4;">
+              🚀 Import starten
+            </button>
+          </div>
+        </div>
+
+        <!-- BILDER EXPORT -->
+        <div class="backup-card">
+          <div class="backup-card-title">🖼️ Artikelbilder exportieren</div>
+          <div class="backup-card-sub">
+            Lädt alle Produkt- und Lagerfotos als ZIP-Archiv herunter. Die Dateien sind eindeutig nach Lagerplatznummer beschriftet und können wieder importiert werden.
+          </div>
+          <div class="bilder-stats-grid">
+            <div class="backup-stat-cell">
+              <div class="backup-stat-num" id="bilder-export-produkt-count">–</div>
+              <div class="backup-stat-lbl">Produktfotos</div>
+            </div>
+            <div class="backup-stat-cell">
+              <div class="backup-stat-num" id="bilder-export-lager-count">–</div>
+              <div class="backup-stat-lbl">Lagerfotos</div>
+            </div>
+          </div>
+          <div id="bilder-export-progress" class="hidden" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+            <div class="progress-wrap"><div class="progress-fill" id="bilder-export-progress-fill" style="width:0%"></div></div>
+            <div class="backup-progress-text" id="bilder-export-progress-text">0%</div>
+            <div class="backup-progress-log" style="height:100px;" id="bilder-export-log"></div>
+          </div>
+          <button class="btn btn-primary" data-action="export-bilder">🖼️ Bilder als ZIP exportieren</button>
+        </div>
+
+        <!-- BILDER IMPORT -->
+        <div class="backup-card">
+          <div class="backup-card-title">🖼️ Artikelbilder importieren</div>
+          <div class="backup-card-sub">
+            Importiert Bilder aus einem zuvor exportierten ZIP-Archiv. Die Fotos werden anhand der Lagerplatznummer den richtigen Artikeln zugeordnet.
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="backup-drop-zone" data-action="open-bilder-import-file" id="bilder-drop-zone">
+              <div class="backup-drop-zone-icon">🗜️</div>
+              <div class="backup-drop-zone-title">ZIP-Datei auswählen</div>
+              <div class="backup-drop-zone-hint">oder hier reinziehen</div>
+              <input type="file" id="bilder-import-file" accept=".zip" class="hidden">
+            </div>
+
+            <div id="bilder-import-preview" class="hidden" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;">
+              <div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;">📋 Vorschau</div>
+              <div id="bilder-import-preview-content"></div>
+            </div>
+
+            <div id="bilder-import-progress" class="hidden" style="display:flex;flex-direction:column;gap:8px;">
+              <div class="progress-wrap"><div class="progress-fill" id="bilder-import-progress-fill" style="width:0%"></div></div>
+              <div class="backup-progress-text" id="bilder-import-progress-text">0%</div>
+              <div class="backup-progress-log" id="bilder-import-log"></div>
+            </div>
+
+            <button class="btn btn-primary" id="btn-bilder-import-start" data-action="start-bilder-import" disabled style="opacity:0.4;">
+              🚀 Bilder importieren
+            </button>
+          </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="backup-card">
+          <div class="backup-card-title">🕐 Letzte Backups</div>
+          <div id="backup-history" style="font-size:0.82rem;color:var(--muted);">Noch keine Backups erstellt</div>
+        </div>
+
+      </section>
+
+      <!-- ── DIAGNOSE ── -->
+      <section class="content-section" id="section-diagnose">
+        <div class="page-header">
+          <div class="page-title">Diagnose</div>
+          <div class="page-sub">System-Gesundheit, Datenprüfung und Fehlerprotokoll</div>
+        </div>
+
+        <!-- Health Check -->
+        <div class="backup-card">
+          <div class="backup-card-title">🏥 DB Health Check</div>
+          <div class="backup-card-sub">Zeigt die Dokument-Anzahl aller Collections für alle 4 Wachen auf einen Blick.</div>
+          <div class="backup-actions">
+            <button class="btn btn-primary" data-action="health-check">🔄 Prüfung starten</button>
+          </div>
+          <div id="health-result" style="margin-top:14px;"></div>
+        </div>
+
+        <!-- Konsistenz -->
+        <div class="backup-card">
+          <div class="backup-card-title">🔍 Konsistenz-Prüfung</div>
+          <div class="backup-card-sub">Prüft die aktive Wache auf fehlerhafte Bereich-Referenzen, doppelte LP-Nummern und abgelaufene Chargen.</div>
+          <div class="backup-actions">
+            <button class="btn btn-primary" data-action="konsistenz-check">🔍 Prüfung starten</button>
+          </div>
+          <div id="konsistenz-result" style="margin-top:14px;"></div>
+        </div>
+
+        <!-- Session Monitor -->
+        <div class="backup-card">
+          <div class="backup-card-title">📡 Session-Monitor</div>
+          <div class="backup-card-sub">Zeigt die aktuelle Bestellsession live an. Aktiv solange diese Seite geöffnet ist.</div>
+          <div id="session-result" style="margin-top:10px;color:var(--muted);font-size:0.82rem;">Wird geladen…</div>
+          <div class="backup-actions" style="margin-top:12px;">
+            <button class="btn btn-ghost" data-action="session-reset" style="color:var(--red);border-color:var(--red);">🗑️ Session zurücksetzen</button>
+          </div>
+        </div>
+
+        <!-- Fehler-Log -->
+        <div class="backup-card">
+          <div class="backup-card-title">📋 Fehler-Log <span id="diagnose-error-badge" style="background:var(--red);color:#fff;padding:1px 8px;border-radius:10px;font-size:0.68rem;margin-left:6px;"></span></div>
+          <div class="backup-card-sub">Persistentes Protokoll aller Fehler seit dem letzten Leeren.</div>
+          <div id="diagnose-error-log" style="margin-top:10px;max-height:300px;overflow-y:auto;"></div>
+          <div class="backup-actions" style="margin-top:12px;">
+            <button class="btn btn-ghost" data-action="clear-error-log">🗑️ Log leeren</button>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ── ARTIKEL MODAL ── -->
+  <div id="artikel-modal" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <span class="modal-title" id="artikel-modal-title">Artikel bearbeiten</span>
+        <button class="modal-close" data-action="close-artikel-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-id">
+        <div class="form-group">
+          <label class="form-label">Name *</label>
+          <input type="text" class="form-input" id="edit-name" placeholder="z.B. Endotrachealtubus Gr. 8">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Lagerplatznummer (LP)</label>
+            <input type="text" class="form-input" id="edit-lp" placeholder="S.2.1.3">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Standort-Code</label>
+            <input type="text" class="form-input" id="edit-location" placeholder="S2.1.3">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bereich</label>
+          <select class="form-input" id="edit-bereich"></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">MIN Menge</label>
+            <input type="number" class="form-input" id="edit-min" placeholder="1" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">MIN Einheit</label>
+            <input type="text" class="form-input" id="edit-minE" placeholder="Stk / VE / P">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">MAX Menge</label>
+            <input type="number" class="form-input" id="edit-max" placeholder="5" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">MAX Einheit</label>
+            <input type="text" class="form-input" id="edit-maxE" placeholder="Stk / VE / P">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Aliases (kommagetrennt)</label>
+          <input type="text" class="form-input" id="edit-aliases" placeholder="Mikrocuff, ETT, Tubus">
+          <div class="form-hint">Suchbegriffe über die der Artikel gefunden werden kann</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hinweis</label>
+          <input type="text" class="form-input" id="edit-hinweis" placeholder="z.B. Siehe R.3.1.4.">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Lieferant</label>
+            <select class="form-input" id="edit-lieferant">
+              <option value="">— kein —</option>
+              <option value="ekg">Meßmer (EKG)</option>
+              <option value="ezio">Teleflex (EZ-IO)</option>
+              <option value="hygiene">Orochemie (Hygiene)</option>
+              <option value="apotheke">Klinikum (Apotheke)</option>
+              <option value="thermopapier">medDV (Thermopapier)</option>
+              <option value="sauerstoff">Kraiss &amp; Friz (O₂)</option>
+              <option value="vokranken">Kohlhammer (VO)</option>
+              <option value="radecker">Radecker</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Formular-Feld</label>
+            <input type="text" class="form-input" id="edit-formularfeld" placeholder="bestellmenge_pos1">
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" style="flex:1" data-action="save-artikel">💾 Speichern</button>
+        <button class="btn btn-ghost" data-action="close-artikel-modal">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BEREICH MODAL ── -->
+  <div id="bereich-modal" class="modal hidden">
+    <div class="modal-box" style="max-width:400px;">
+      <div class="modal-head">
+        <span class="modal-title" id="bereich-modal-title">Bereich bearbeiten</span>
+        <button class="modal-close" data-action="close-bereich-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="bereich-edit-id">
+        <div class="form-group">
+          <label class="form-label">Name *</label>
+          <input type="text" class="form-input" id="bereich-edit-name" placeholder="z.B. Lager – Schrank 7">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reihenfolge</label>
+          <input type="number" class="form-input" id="bereich-edit-reihenfolge" placeholder="14" min="1">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" style="flex:1" data-action="save-bereich">💾 Speichern</button>
+        <button class="btn btn-ghost" data-action="close-bereich-modal">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="user-avatar-file-input" accept="image/*" class="hidden">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script type="module" src="../js/admin.js"></script>
+  <script src="../js/pwa.js"></script>
+  <script>
+    (function() {
+      const L = {}; // Wachen-Labels hier eintragen (z. B. w1_meinstadt:'W1 Meine Stadt')
+      const w = localStorage.getItem('activeWache');
+      const p = document.getElementById('wache-pill');
+      const city = w && L[w] ? L[w].split(' ').slice(1).join(' ') : '';
+      if (p && city) { p.textContent = city; p.classList.remove('hidden'); p.onclick = function(){ localStorage.removeItem('activeWache'); location.href='../index.html'; }; }
+    })();
+  </script>
+</body>
+</html>

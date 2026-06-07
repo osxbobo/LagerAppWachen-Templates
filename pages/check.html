@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="apple-touch-icon" href="../icons/icon-192.png">
+  <meta name="theme-color" content="#F26B2E">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LAGER//APP">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Lagerbestellung – LAGER//APP</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/mitarbeiter.css">
+  <link rel="stylesheet" href="../css/check.css">
+</head>
+<body>
+
+  <header class="m-nav">
+    <button id="btn-nav-back" class="m-back" title="Lagersuche">
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l-5 5 5 5"/></svg>
+    </button>
+    <span class="la-wordmark">LAGER<span class="slash">//</span>APP</span>
+    <button class="wache-pill hidden" id="wache-pill"></button>
+    <div class="m-nav-right">
+      <button id="wl-nav-btn" class="m-panel-btn">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M14 9v4M16 11h-4"/></svg>
+        Wachenleiter
+      </button>
+      <a id="panel-back-btn" class="m-panel-btn" href="portal.html">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="16" height="13" rx="2"/><path d="M6 7h8M6 10h5"/></svg>
+        Panel
+      </a>
+      <button class="m-theme" id="theme-btn">☀️</button>
+    </div>
+  </header>
+
+<!-- ── Laufband ── -->
+<div class="laufband-bar hidden" id="laufband-bar">
+  <div class="laufband-label">Info</div>
+  <div class="laufband-track">
+    <span class="laufband-text" id="laufband-text"></span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN: BEREICH-AUSWAHL
+════════════════════════════════ -->
+<div id="screen-join" class="screen hidden">
+  <div class="join-wrap">
+    <div>
+      <div class="join-title">Bereich wählen</div>
+      <div class="join-sub" id="join-sub">Wähle deinen Bereich für die Lagerbestellung</div>
+    </div>
+    <div class="live-badge" id="live-badge">
+      <div class="live-dot"></div>
+      Live-Sync aktiv
+    </div>
+    <div id="bereich-list">
+      <div class="loading-state"><div class="spinner"></div>Bereiche laden…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN: ARTIKEL-CHECK
+════════════════════════════════ -->
+<div id="screen-check" class="screen hidden">
+  <div class="check-sticky">
+    <div class="check-bereich-label" id="check-bereich-label">–</div>
+    <div class="prog-bar-wrap"><div class="prog-bar-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="prog-labels">
+      <span id="prog-text">0 / 0 beantwortet</span>
+      <span id="prog-pct">0%</span>
+    </div>
+  </div>
+  <div class="check-body" id="check-body"></div>
+  <div class="bottom-bar">
+    <button id="btn-finish" class="btn-primary hidden">✅ Bereich fertig markieren</button>
+    <button id="btn-cancel-bereich" class="btn-secondary">Bereich abbrechen</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN: WARTEN / ÜBERSICHT
+════════════════════════════════ -->
+<div id="screen-wait" class="screen hidden">
+  <div class="wait-wrap">
+    <div>
+      <div class="wait-title">Übersicht</div>
+      <div class="wait-sub" id="wait-sub">Warte auf Kollegen…</div>
+    </div>
+    <div class="wait-card">
+      <div class="wait-card-hd">Bereiche</div>
+      <div id="wait-list"></div>
+    </div>
+    <div class="wait-card" id="wait-teilnehmer-card" style="display:none;">
+      <div class="wait-card-hd">Beteiligte Mitarbeiter</div>
+      <div class="pills-wrap" id="wait-pills"></div>
+    </div>
+  </div>
+  <div class="bottom-bar">
+    <button id="btn-abschliessen" class="btn-primary hidden">🏁 Abschließen &amp; Unterschrift</button>
+    <button id="btn-weiterer" class="btn-secondary" style="display:none;">+ Weiteren Bereich übernehmen</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN: UNTERSCHRIFT
+════════════════════════════════ -->
+<div id="screen-sig" class="screen hidden">
+  <div class="sig-wrap">
+    <div class="sig-title">Abschluss &amp; Unterschrift</div>
+
+    <div class="sig-card">
+      <div class="sig-card-lbl">Zusammenfassung</div>
+      <div id="sum-rows"></div>
+    </div>
+
+    <div class="sig-card" id="order-card" style="display:none;">
+      <div class="sig-card-lbl">Zu bestellende Artikel</div>
+      <table class="order-tbl">
+        <thead><tr><th>Artikel</th><th>Menge</th><th>Von</th></tr></thead>
+        <tbody id="order-body"></tbody>
+      </table>
+    </div>
+
+    <div class="sig-card">
+      <div class="sig-card-lbl">Unterschrift</div>
+      <div class="canvas-wrap">
+        <canvas id="sig-canvas"></canvas>
+        <div class="sig-hint" id="sig-hint">Hier unterschreiben</div>
+      </div>
+      <button id="btn-clear-sig" class="btn-secondary">Unterschrift löschen</button>
+    </div>
+  </div>
+  <div class="bottom-bar">
+    <button id="btn-submit" class="btn-primary">📄 Absenden &amp; Fertig</button>
+    <button id="btn-sig-back" class="btn-secondary">← Zurück zur Übersicht</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN: GESPERRT (Solo-Modus)
+════════════════════════════════ -->
+<div id="screen-block" class="screen hidden">
+  <div class="block-screen-inner">
+    <div class="block-icon">🔒</div>
+    <div class="block-title">StockSwipe läuft gerade</div>
+    <div class="block-info" id="block-solo-info"></div>
+    <div class="block-hint">Diese Seite entsperrt sich automatisch sobald die Bestellung abgeschlossen ist.</div>
+  </div>
+</div>
+
+<script type="module" src="../js/check.js"></script>
+<script src="../js/pwa.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      const expectedScope = window.location.origin + '/';
+      regs.forEach(reg => { if (reg.scope !== expectedScope) reg.unregister(); });
+    });
+  }
+</script>
+<script>
+  (function() {
+    const L = {}; // Wachen-Labels hier eintragen (z. B. w1_meinstadt:'W1 Meine Stadt')
+    const w = localStorage.getItem('activeWache');
+    const city = w && L[w] ? L[w].split(' ').slice(1).join(' ') : '';
+    const p = document.getElementById('wache-pill');
+    if (p && city) { p.textContent = city; p.classList.remove('hidden'); p.onclick = function(){ localStorage.removeItem('activeWache'); location.href='../index.html'; }; }
+  })();
+</script>
+</body>
+</html>

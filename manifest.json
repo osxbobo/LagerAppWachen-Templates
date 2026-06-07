@@ -1,0 +1,52 @@
+{
+  "name": "LAGER//APP",
+  "short_name": "LAGER//APP",
+  "description": "Digitale Lagerverwaltung & Bestandskontrolle",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080c14",
+  "theme_color": "#f97316",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Lagercheck",
+      "url": "./pages/check.html",
+      "description": "Lagercheck starten"
+    },
+    {
+      "name": "Lagersuche",
+      "url": "./",
+      "description": "Artikel suchen"
+    }
+  ],
+  "categories": ["medical", "productivity"],
+  "prefer_related_applications": false
+}

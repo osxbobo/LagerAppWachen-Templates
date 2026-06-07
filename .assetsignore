@@ -1,0 +1,9 @@
+node_modules/
+.firebaserc
+firebase.json
+firestore.rules
+database.rules.json
+README.md
+LAGER_APP.png
+package.json
+

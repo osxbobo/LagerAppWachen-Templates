@@ -1,0 +1,13 @@
+{
+  "name": "lagerapp-wachen",
+  "version": "1.0.0",
+  "description": "Digitale Lagerverwaltung für Rettungswachen. Progressive Web App (PWA) auf Basis von Firebase Firestore – ohne Framework, reines HTML/CSS/JavaScript.",
+  "main": "sw.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

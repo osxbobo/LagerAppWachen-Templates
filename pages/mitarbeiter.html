@@ -1,0 +1,463 @@
+﻿<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#F26B2E">
+  <title>Mitarbeiter – LAGER//APP</title>
+  <link rel="manifest" href="../manifest.json">
+  <link rel="apple-touch-icon" href="../icons/icon-192.png">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/mitarbeiter.css">
+</head>
+<body>
+
+  <header class="m-nav">
+    <button class="m-back" title="Lagersuche">
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l-5 5 5 5"/></svg>
+    </button>
+    <span class="la-wordmark">LAGER<span class="slash">//</span>APP</span>
+    <button class="wache-pill hidden" id="wache-pill"></button>
+    <div class="m-nav-right">
+      <button id="wl-nav-btn" class="m-panel-btn">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M14 9v4M16 11h-4"/></svg>
+        Wachenleiter
+      </button>
+      <a id="panel-back-btn" class="m-panel-btn" href="portal.html">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="16" height="13" rx="2"/><path d="M6 7h8M6 10h5"/></svg>
+        Panel
+      </a>
+      <button class="m-theme" id="theme-btn">☀️</button>
+    </div>
+  </header>
+
+  <!-- ── Laufband ── -->
+  <div class="laufband-bar hidden" id="laufband-bar">
+    <div class="laufband-label">Info</div>
+    <div class="laufband-track">
+      <span class="laufband-text" id="laufband-text"></span>
+    </div>
+  </div>
+
+  <div class="m-page">
+    <div class="m-col-left">
+
+    <!-- Greeting -->
+    <div class="m-greeting">
+      <div class="m-tag" id="m-wache-tag">DRK · Rettungswache</div>
+      <div class="m-title">
+        Hallo,
+        <div class="m-title-sub" id="user-name">Gast.</div>
+      </div>
+      <div class="m-sub">
+        <span id="m-wache-name">Rettungswache</span>
+        <span class="m-sub-dot">·</span>
+        <span id="kw-label">KW –</span>
+      </div>
+    </div>
+
+    <!-- Resume-Draft Banner (shown when unfinished draft exists) -->
+    <div id="draft-banner" class="m-draft-banner hidden">
+      <div class="m-draft-icon">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg>
+      </div>
+      <div class="m-draft-body">
+        <div class="m-draft-label" id="draft-label">OFFENE BESTELLUNG · –</div>
+        <div class="m-draft-text"  id="draft-text">–</div>
+      </div>
+      <button class="m-draft-resume-btn">Fortführen</button>
+    </div>
+
+    <!-- Live Session Pill (when bestellungen_session is active) -->
+    <div id="session-pill" class="m-session-pill hidden">
+      <span class="la-chip ok"><span class="dot"></span>Live</span>
+      <div class="m-session-body">
+        <div class="m-session-text" id="session-text"></div>
+        <div class="m-session-sub"  id="session-sub"></div>
+      </div>
+      <a href="check.html" class="m-session-link">Mitmachen →</a>
+    </div>
+
+    <!-- 2×2 Action Tiles -->
+    <div class="m-grid">
+
+      <!-- Verfallsmonitor — protected -->
+      <div class="m-tile" id="tile-verfall"
+        data-guarded data-href="verfallmonitor.html" data-guard-context="für den Verfallsmonitor">
+        <div class="m-tile-top">
+          <div class="m-tile-icon la-photo tint-green">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2v3M13 2v3"/><circle cx="10" cy="13" r="2.5"/><path d="M10 11.5V13l1 1"/></svg>
+          </div>
+          <span class="m-tile-chip lock-chip">
+            <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="5" height="4" rx="1"/><path d="M4.5 6V4.5a1.5 1.5 0 0 1 3 0V6"/></svg>
+            Aktiv
+          </span>
+        </div>
+        <div class="m-tile-bottom">
+          <div class="m-tile-name">Verfallsmonitor</div>
+          <div class="m-tile-sub">Chargen &amp; Verfall prüfen</div>
+        </div>
+      </div>
+
+      <!-- Lagerbestellung — protected -->
+      <div class="m-tile" id="tile-check"
+        data-guarded data-href="check.html" data-guard-context="für die Lagerbestellung">
+        <div class="m-tile-top">
+          <div class="m-tile-icon la-photo tint-rose">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"/><path d="M7 8.5l2 2 4-4M7 14h6"/></svg>
+          </div>
+          <span class="m-tile-chip lock-chip">
+            <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="5" height="4" rx="1"/><path d="M4.5 6V4.5a1.5 1.5 0 0 1 3 0V6"/></svg>
+            Aktiv
+          </span>
+        </div>
+        <div class="m-tile-bottom">
+          <div class="m-tile-name">Lagerbestellung</div>
+          <div class="m-tile-sub">13 Bereiche · ~38 min</div>
+        </div>
+      </div>
+
+      <!-- Verfallsscan — protected -->
+      <div class="m-tile" id="tile-scan"
+        data-guarded data-href="scanner.html" data-guard-context="für den Verfallsscan">
+        <div class="m-tile-top">
+          <div class="m-tile-icon la-photo tint-amber">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M3 7V4h3M17 7V4h-3M3 13v3h3M17 13v3h-3"/><path d="M3 10h14"/></svg>
+          </div>
+          <span class="m-tile-chip lock-chip">
+            <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="5" height="4" rx="1"/><path d="M4.5 6V4.5a1.5 1.5 0 0 1 3 0V6"/></svg>
+            Aktiv
+          </span>
+        </div>
+        <div class="m-tile-bottom">
+          <div class="m-tile-name">Verfallsscan</div>
+          <div class="m-tile-sub">Charge · LOT · GTIN</div>
+        </div>
+      </div>
+
+      <!-- StockSwipe — protected -->
+      <div class="m-tile" id="tile-swipe"
+        data-guarded data-href="stockswipe.html" data-guard-context="für StockSwipe">
+        <div class="m-tile-top">
+          <div class="m-tile-icon la-photo tint-violet">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="3" transform="rotate(-6 10 10)"/><rect x="5" y="5" width="14" height="14" rx="3" transform="rotate(4 12 12)" opacity="0.4"/></svg>
+          </div>
+          <span class="m-tile-chip lock-chip">
+            <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="5" height="4" rx="1"/><path d="M4.5 6V4.5a1.5 1.5 0 0 1 3 0V6"/></svg>
+            Aktiv
+          </span>
+        </div>
+        <div class="m-tile-bottom">
+          <div class="m-tile-name">StockSwipe</div>
+          <div class="m-tile-sub">Schnellcheck · Wischen</div>
+        </div>
+      </div>
+
+    </div>
+
+    </div><!-- /.m-col-left -->
+    <div class="m-col-right">
+
+    <!-- Auth State Row -->
+    <div class="m-auth-row">
+      <!-- Signed in state -->
+      <div id="auth-signed-in" class="m-auth-contents">
+        <label for="avatar-file-input" style="cursor:pointer;flex-shrink:0;">
+          <div class="m-auth-avatar m-auth-avatar--default" id="auth-avatar" title="Profilbild tippen zum Ändern" style="overflow:hidden;">MK</div>
+        </label>
+        <input type="file" id="avatar-file-input" accept="image/*" style="display:none;">
+        <div class="m-auth-body">
+          <div class="m-auth-name" id="auth-name-label">Angemeldet</div>
+          <div class="m-auth-status">
+            <span class="m-auth-dot"></span>
+            <span id="auth-status-text">PIN aktiv · Foto tippen zum Ändern</span>
+          </div>
+        </div>
+        <button class="m-auth-btn ghost hidden" id="change-pin-btn">PIN ändern</button>
+        <button class="m-auth-btn ghost" data-action="logout">Abmelden</button>
+      </div>
+      <!-- Guest state -->
+      <div id="auth-guest" class="hidden m-auth-contents">
+        <div class="m-auth-avatar guest">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="10" cy="7" r="3"/><path d="M4 17c1-3 3.5-4 6-4s5 1 6 4"/></svg>
+        </div>
+        <div class="m-auth-body">
+          <div class="m-auth-name">Nicht angemeldet</div>
+          <div class="m-auth-status m-auth-status--guest">Bestellungen erfordern PIN</div>
+        </div>
+        <a href="login.html?tab=mitarbeiter" class="m-auth-btn primary">Anmelden</a>
+      </div>
+    </div>
+
+    <!-- Session-Reset (für hängende Bestellungen) -->
+    <div id="session-reset-bar" class="m-session-reset-bar hidden">
+      <div class="m-session-reset-icon">⚠️</div>
+      <div class="m-session-reset-body">
+        <div class="m-session-reset-title">Bestellung hängt?</div>
+        <div class="m-session-reset-sub">Session beenden und neu starten</div>
+      </div>
+      <button class="m-session-reset-btn" id="session-reset-btn">Beenden</button>
+    </div>
+
+    <!-- Tutorial / Anleitung -->
+    <div>
+      <div class="m-section-label">Anleitung</div>
+      <div class="m-tutorial-card">
+        <div class="m-tutorial-item" data-help="lagersuche">
+          <span class="m-tutorial-icon">🔍</span>
+          <div>
+            <div class="m-tutorial-title">Lagersuche</div>
+            <div class="m-tutorial-sub">Artikel, Bestände und Lagerorte durchsuchen</div>
+          </div>
+          <span class="m-tutorial-arrow">›</span>
+        </div>
+        <div class="m-tutorial-item" data-help="verfallsmonitor">
+          <span class="m-tutorial-icon">⏳</span>
+          <div>
+            <div class="m-tutorial-title">Verfallsmonitor</div>
+            <div class="m-tutorial-sub">Ablaufdaten aller Chargen im Überblick</div>
+          </div>
+          <span class="m-tutorial-arrow">›</span>
+        </div>
+        <div class="m-tutorial-item" data-help="lagerbestellung">
+          <span class="m-tutorial-icon">📋</span>
+          <div>
+            <div class="m-tutorial-title">Lagerbestellung (Multi)</div>
+            <div class="m-tutorial-sub">Artikel mit Ja/Nein und Menge bestellen</div>
+          </div>
+          <span class="m-tutorial-arrow">›</span>
+        </div>
+        <div class="m-tutorial-item" data-help="stockswipe">
+          <span class="m-tutorial-icon">👆</span>
+          <div>
+            <div class="m-tutorial-title">Lagerbestellung (StockSwipe)</div>
+            <div class="m-tutorial-sub">Karten nach rechts (bestellen) oder links (genug) swipen</div>
+          </div>
+          <span class="m-tutorial-arrow">›</span>
+        </div>
+        <div class="m-tutorial-item" data-help="verfallscan">
+          <span class="m-tutorial-icon">📷</span>
+          <div>
+            <div class="m-tutorial-title">Verfallscan</div>
+            <div class="m-tutorial-sub">Chargen per Barcode scannen und Verfall erfassen</div>
+          </div>
+          <span class="m-tutorial-arrow">›</span>
+        </div>
+        <div class="m-tutorial-item" data-help="pin">
+          <span class="m-tutorial-icon">🔑</span>
+          <div>
+            <div class="m-tutorial-title">PIN ändern</div>
+            <div class="m-tutorial-sub">Persönlichen 4-stelligen PIN aktualisieren</div>
+          </div>
+          <span class="m-tutorial-arrow">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Letzte Aktivität (nur für eingeloggte Mitarbeiter) -->
+    <div id="activity-section" class="hidden">
+      <div class="m-section-label">Letzte Aktivität</div>
+      <div class="m-activity-list" id="activity-list">
+        <div class="m-activity-row">
+          <div class="m-activity-chip ok">✓</div>
+          <div>
+            <div class="m-activity-text">Wird geladen…</div>
+            <div class="m-activity-meta"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    </div><!-- /.m-col-right -->
+  </div>
+
+  <!-- Help Overlay -->
+  <div id="help-overlay" class="m-sheet-overlay">
+    <div class="m-sheet-panel m-sheet-panel--help">
+      <!-- Handle -->
+      <div class="m-sheet-handle m-sheet-handle--top"></div>
+      <!-- Header -->
+      <div class="help-header">
+        <span id="help-icon" class="help-header-icon"></span>
+        <div class="help-header-body">
+          <div id="help-title" class="help-header-title"></div>
+          <div class="help-header-sub">Schritt-für-Schritt Anleitung</div>
+        </div>
+        <button id="help-close-btn" class="help-close-btn">✕</button>
+      </div>
+      <!-- Optional Screenshot -->
+      <div id="help-image-wrap" class="help-image-wrap">
+        <img id="help-image" alt="Screenshot" class="help-image">
+      </div>
+      <!-- Schritte -->
+      <ol id="help-steps" class="help-steps"></ol>
+    </div>
+  </div>
+
+  <!-- PIN Change Modal -->
+  <div id="pin-change-wall" class="m-sheet-overlay">
+    <div class="m-sheet-panel m-sheet-panel--pin">
+      <div class="m-sheet-handle"></div>
+      <div id="pc-step-1">
+        <div class="pc-title">PIN ändern</div>
+        <div class="pc-subtitle">Schritt 1 von 2 · Aktuellen PIN eingeben</div>
+        <div class="pc-dots-row">
+          <div class="ln-pin-dot" id="pc-dot-0"></div>
+          <div class="ln-pin-dot" id="pc-dot-1"></div>
+          <div class="ln-pin-dot" id="pc-dot-2"></div>
+          <div class="ln-pin-dot" id="pc-dot-3"></div>
+        </div>
+        <div class="ln-pin-error" id="pc-error-1"></div>
+        <div class="ln-numpad pc-numpad">
+          <button class="ln-key" data-key="1">1</button>
+          <button class="ln-key" data-key="2">2</button>
+          <button class="ln-key" data-key="3">3</button>
+          <button class="ln-key" data-key="4">4</button>
+          <button class="ln-key" data-key="5">5</button>
+          <button class="ln-key" data-key="6">6</button>
+          <button class="ln-key" data-key="7">7</button>
+          <button class="ln-key" data-key="8">8</button>
+          <button class="ln-key" data-key="9">9</button>
+          <button class="ln-key cancel" data-key="cancel">Abbrechen</button>
+          <button class="ln-key" data-key="0">0</button>
+          <button class="ln-key del" data-key="del">
+            <svg viewBox="0 0 26 20" width="24" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 1h17a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7L1 10 7 1z"/><path d="M12 6l8 8M20 6l-8 8"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Schritt 2: Neuer PIN -->
+      <div id="pc-step-2" class="hidden">
+        <div class="pc-title">PIN ändern</div>
+        <div class="pc-subtitle">Schritt 2 von 3 · Neuen PIN eingeben</div>
+        <div class="pc-dots-row">
+          <div class="ln-pin-dot" id="pc-ndot-0"></div>
+          <div class="ln-pin-dot" id="pc-ndot-1"></div>
+          <div class="ln-pin-dot" id="pc-ndot-2"></div>
+          <div class="ln-pin-dot" id="pc-ndot-3"></div>
+        </div>
+        <div class="ln-pin-error" id="pc-error-2"></div>
+        <div class="ln-numpad pc-numpad">
+          <button class="ln-key" data-key="1">1</button>
+          <button class="ln-key" data-key="2">2</button>
+          <button class="ln-key" data-key="3">3</button>
+          <button class="ln-key" data-key="4">4</button>
+          <button class="ln-key" data-key="5">5</button>
+          <button class="ln-key" data-key="6">6</button>
+          <button class="ln-key" data-key="7">7</button>
+          <button class="ln-key" data-key="8">8</button>
+          <button class="ln-key" data-key="9">9</button>
+          <button class="ln-key cancel" data-key="cancel">Abbrechen</button>
+          <button class="ln-key" data-key="0">0</button>
+          <button class="ln-key del" data-key="del">
+            <svg viewBox="0 0 26 20" width="24" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 1h17a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7L1 10 7 1z"/><path d="M12 6l8 8M20 6l-8 8"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Schritt 3: Bestätigen -->
+      <div id="pc-step-3" class="hidden">
+        <div class="pc-title">PIN ändern</div>
+        <div class="pc-subtitle">Schritt 3 von 3 · Neuen PIN bestätigen</div>
+        <div class="pc-dots-row">
+          <div class="ln-pin-dot" id="pc-cdot-0"></div>
+          <div class="ln-pin-dot" id="pc-cdot-1"></div>
+          <div class="ln-pin-dot" id="pc-cdot-2"></div>
+          <div class="ln-pin-dot" id="pc-cdot-3"></div>
+        </div>
+        <div class="ln-pin-error" id="pc-error-3"></div>
+        <div class="ln-numpad pc-numpad">
+          <button class="ln-key" data-key="1">1</button>
+          <button class="ln-key" data-key="2">2</button>
+          <button class="ln-key" data-key="3">3</button>
+          <button class="ln-key" data-key="4">4</button>
+          <button class="ln-key" data-key="5">5</button>
+          <button class="ln-key" data-key="6">6</button>
+          <button class="ln-key" data-key="7">7</button>
+          <button class="ln-key" data-key="8">8</button>
+          <button class="ln-key" data-key="9">9</button>
+          <button class="ln-key cancel" data-key="cancel">Abbrechen</button>
+          <button class="ln-key" data-key="0">0</button>
+          <button class="ln-key del" data-key="del">
+            <svg viewBox="0 0 26 20" width="24" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 1h17a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7L1 10 7 1z"/><path d="M12 6l8 8M20 6l-8 8"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Wall -->
+  <div id="login-wall" class="m-sheet-overlay">
+    <div class="m-sheet-panel m-sheet-panel--lw">
+      <div class="m-sheet-handle"></div>
+      <div class="lw-header">
+        <div class="lw-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        </div>
+        <div>
+          <div class="lw-title">Anmelden erforderlich</div>
+          <div class="lw-sub" id="lw-context">für diese Aktion</div>
+        </div>
+      </div>
+      <div class="lw-info">
+        Lagersuche bleibt für alle offen. Anmeldung mit <strong>Name + PIN</strong> nur für Bestellungen, Verfallsscan und Bestand-Bearbeitung.
+      </div>
+      <div class="lw-actions">
+        <button id="lw-cancel-btn" class="lw-cancel-btn">Abbrechen</button>
+        <a id="lw-btn" href="login.html?tab=mitarbeiter" class="lw-login-link">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="14" height="10" rx="2"/><path d="M7 8V6a3 3 0 0 1 6 0v2"/></svg>
+          Mit Name &amp; PIN anmelden
+        </a>
+      </div>
+      <div class="lw-footer-note">
+        Kein PIN? <strong class="lw-wl-hint">Wachenleiter fragen</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wachenleiter Login Modal -->
+  <div id="wl-login-wall" class="m-sheet-overlay">
+    <div class="m-sheet-panel m-sheet-panel--wl">
+      <div class="m-sheet-handle"></div>
+      <div class="wl-header">
+        <div class="wl-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        </div>
+        <div>
+          <div class="wl-title">Wachenleiter-Login</div>
+          <div class="wl-sub">E-Mail und Passwort eingeben</div>
+        </div>
+      </div>
+      <div class="wl-fields">
+        <input type="email"    id="wl-modal-email"    class="wl-input" placeholder="E-Mail-Adresse"    autocomplete="email">
+        <input type="password" id="wl-modal-password" class="wl-input" placeholder="Passwort"          autocomplete="current-password">
+      </div>
+      <div id="wl-modal-error" class="wl-error"></div>
+      <div class="wl-actions">
+        <button id="wl-modal-cancel-btn" class="wl-cancel-btn">Abbrechen</button>
+        <button id="wl-modal-login-btn"  class="wl-login-btn">Anmelden</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/mitarbeiter.js"></script>
+  <script src="../js/pwa.js"></script>
+  <script>
+    (function() {
+      const L = {}; // Wachen-Labels hier eintragen (z. B. w1_meinstadt:'W1 Meine Stadt')
+      const w = localStorage.getItem('activeWache');
+      const city = w && L[w] ? L[w].split(' ').slice(1).join(' ') : '';
+      const label = w && L[w] ? L[w] : '';
+      const p = document.getElementById('wache-pill');
+      if (p && city) { p.textContent = city; p.classList.remove('hidden'); p.onclick = function(){ localStorage.removeItem('activeWache'); location.href='../index.html'; }; }
+      const tag = document.getElementById('m-wache-tag');
+      if (tag && label) tag.textContent = 'DRK · ' + label;
+      const name = document.getElementById('m-wache-name');
+      if (name && label) name.textContent = label;
+    })();
+  </script>
+</body>
+</html>

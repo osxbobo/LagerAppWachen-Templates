@@ -1,0 +1,804 @@
+﻿<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="apple-touch-icon" href="../icons/icon-192.png">
+  <meta name="theme-color" content="#F26B2E">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LAGER//APP">
+  <title>Wachenleiter – LAGER//APP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/portal.css">
+</head>
+<body class="portal-page">
+
+  <!-- NAVBAR -->
+  <nav class="p-nav">
+    <button class="p-menu-btn" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menü">☰</button>
+    <a href="../index.html" class="m-back" title="Zur Lagersuche">
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l-5 5 5 5"/></svg>
+    </a>
+    <a href="../index.html" class="p-wordmark" style="text-decoration:none;color:inherit;">LAGER<span class="slash">//</span>APP</a>
+    <button class="wache-pill hidden" id="wache-pill"></button>
+    <div class="p-nav-right">
+      <span id="nav-user" class="p-nav-user" style="display:none;"></span>
+      <span class="p-badge">WACHENLEITER</span>
+      <button class="p-btn p-ma-link" onclick="goToMitarbeiter()">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        Mitarbeiter
+      </button>
+      <select id="wachen-select" class="p-wachen-select hidden" onchange="onWacheSelect(this.value)" title="Wache wechseln"></select>
+      <button class="p-btn-logout" onclick="doLogout()">Abmelden</button>
+      <button class="p-theme" id="theme-toggle" onclick="toggleTheme()">☀️</button>
+    </div>
+  </nav>
+
+  <!-- AUTH LOADING -->
+  <div id="auth-loading" class="loading-state"><div class="spinner"></div><span>Authentifizierung...</span></div>
+
+  <!-- BOTTOM NAV (Mobile) -->
+  <nav class="bottom-nav hidden" id="bottom-nav">
+    <button class="bottom-tab active" data-section="dashboard" onclick="showSection('dashboard')">
+      <span class="bottom-tab-icon">📊</span>
+      <span class="bottom-tab-label">Dashboard</span>
+    </button>
+    <button class="bottom-tab" data-section="bestellungen" onclick="showSection('bestellungen')">
+      <span class="bottom-tab-icon">📋</span>
+      <span class="bottom-tab-label">Bestellungen</span>
+    </button>
+    <button class="bottom-tab" data-section="chargen" onclick="showSection('chargen')">
+      <span class="bottom-tab-icon">🗄️</span>
+      <span class="bottom-tab-label">Chargen</span>
+    </button>
+    <button class="bottom-tab" id="bottom-more-tab" onclick="openBottomSheet()">
+      <span class="bottom-tab-icon">⋯</span>
+      <span class="bottom-tab-label">Mehr</span>
+    </button>
+  </nav>
+
+  <!-- BOTTOM SHEET -->
+  <div class="bottom-sheet-backdrop hidden" id="bottom-sheet-backdrop" onclick="closeBottomSheet()"></div>
+  <div class="bottom-sheet" id="bottom-sheet">
+    <div class="bottom-sheet-handle"></div>
+    <div class="bottom-sheet-title">Navigation</div>
+    <button class="bottom-sheet-item" onclick="goToMitarbeiter()">
+      <span class="bottom-sheet-item-icon">👤</span> Zum Mitarbeiterbereich
+    </button>
+    <button class="bottom-sheet-item" onclick="window.location.href='../index.html'">
+      <span class="bottom-sheet-item-icon">🔍</span> Zur Lagersuche
+    </button>
+    <button class="bottom-sheet-item" data-section="artikel" onclick="showSection('artikel');closeBottomSheet()">
+      <span class="bottom-sheet-item-icon">📦</span> Artikelverwaltung
+    </button>
+    <button class="bottom-sheet-item" data-section="bereiche" onclick="showSection('bereiche');closeBottomSheet()">
+      <span class="bottom-sheet-item-icon">🏠</span> Bereiche
+    </button>
+    <button class="bottom-sheet-item" data-section="fotos" onclick="showSection('fotos');closeBottomSheet()">
+      <span class="bottom-sheet-item-icon">📸</span> Fotos & Bilder
+    </button>
+    <button class="bottom-sheet-item" data-section="ss-fotos" onclick="showSection('ss-fotos');closeBottomSheet()">
+      <span class="bottom-sheet-item-icon">🃏</span> StockSwipe Fotos
+    </button>
+    <button class="bottom-sheet-item" data-section="statistik" onclick="showSection('statistik');closeBottomSheet()">
+      <span class="bottom-sheet-item-icon">📊</span> Statistik
+    </button>
+    <button class="bottom-sheet-item" data-section="sessions" onclick="showSection('sessions');closeBottomSheet()">
+      <span class="bottom-sheet-item-icon">👥</span> Live Sessions
+    </button>
+    <button class="bottom-sheet-item" data-section="verfallskalender" onclick="showSection('verfallskalender');closeBottomSheet()">
+      <span class="bottom-sheet-item-icon">📅</span> Verfallskalender
+    </button>
+    <button class="bottom-sheet-item" data-section="mitarbeiter" onclick="showSection('mitarbeiter');closeBottomSheet()">
+      <span class="bottom-sheet-item-icon">👥</span> Mitarbeiter
+    </button>
+    <button class="bottom-sheet-item" data-section="anleitung" onclick="showSection('anleitung');closeBottomSheet()">
+      <span class="bottom-sheet-item-icon">📖</span> Anleitungen
+    </button>
+    <button class="bottom-sheet-item" data-section="laufband" onclick="showSection('laufband');closeBottomSheet()">
+      <span class="bottom-sheet-item-icon">📢</span> Laufband
+    </button>
+    <button class="bottom-sheet-item" onclick="window.location.href='scanner.html'">
+      <span class="bottom-sheet-item-icon">📷</span> Charge-Scanner
+    </button>
+    <button class="bottom-sheet-item" onclick="doLogout()" style="color:var(--crit);">
+      <span class="bottom-sheet-item-icon">↪</span> Abmelden
+    </button>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="portal-layout hidden" id="portal-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="portal-sidebar">
+
+      <!-- Workspace switcher -->
+      <div class="sidebar-workspace">
+        <div class="sidebar-ws-icon">L</div>
+        <div>
+          <div class="sidebar-ws-name" id="sidebar-ws-name">Rettungswache</div>
+          <div class="sidebar-ws-sub" id="sidebar-ws-sub"></div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Übersicht</div>
+        <div class="sidebar-item active" id="nav-dashboard" onclick="showSection('dashboard')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="5" height="5" rx="1"/><rect x="8" y="1" width="5" height="5" rx="1"/><rect x="1" y="8" width="5" height="5" rx="1"/><rect x="8" y="8" width="5" height="5" rx="1"/></svg>
+          Dashboard
+        </div>
+        <div class="sidebar-item" id="nav-bestellungen" onclick="showSection('bestellungen')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2h6l3 3v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 2v3h3M5 8h4M5 10.5h3"/></svg>
+          Bestellungen
+        </div>
+
+        <div class="sidebar-section-label">Lager</div>
+        <div class="sidebar-item" id="nav-chargen" onclick="showSection('chargen')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="10" height="8.5" rx="1.2"/><path d="M3 6h10M5 2v3M9 2v3"/></svg>
+          Chargen &amp; Verfall
+        </div>
+        <div class="sidebar-item" id="nav-verfallskalender" onclick="showSection('verfallskalender')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="12" height="10" rx="1.2"/><path d="M1 6h12M4 1v3M10 1v3"/></svg>
+          Verfallskalender
+        </div>
+        <div class="sidebar-item" id="nav-artikel" onclick="showSection('artikel')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 1.5l5 3v5l-5 3-5-3v-5l5-3z"/><path d="M2 4.5l5 3 5-3M7 7.5V13"/></svg>
+          Artikelverwaltung
+        </div>
+        <div class="sidebar-item" id="nav-bereiche" onclick="showSection('bereiche')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5 7 2.5l5 4V12a1 1 0 0 1-1 1H8.5v-3h-3v3H3a1 1 0 0 1-1-1V6.5z"/></svg>
+          Bereiche
+        </div>
+        <div class="sidebar-item" id="nav-fotos" onclick="showSection('fotos')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4z"/><circle cx="7" cy="7" r="2"/><path d="M10 4h.01"/></svg>
+          Fotos &amp; Bilder
+        </div>
+        <div class="sidebar-item" id="nav-ss-fotos" onclick="showSection('ss-fotos')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="2" width="12" height="10" rx="1.2"/><path d="M1 5h12M4 2v3"/><circle cx="7" cy="8.5" r="1.5"/></svg>
+          StockSwipe Fotos
+        </div>
+
+        <div class="sidebar-section-label">Auswertung</div>
+        <div class="sidebar-item" id="nav-statistik" onclick="showSection('statistik')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11V8M5 11V5M8 11V7M11 11V3"/></svg>
+          Statistik
+        </div>
+        <div class="sidebar-item" id="nav-sessions" onclick="showSection('sessions')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="5" r="2"/><circle cx="10" cy="5" r="2"/><path d="M1 12c0-1.7 1.6-3 3.5-3s3.5 1.3 3.5 3M7 12c0-1.7 1.3-3 3-3s3 1.3 3 3"/></svg>
+          Live Sessions
+        </div>
+
+        <div class="sidebar-section-label">System</div>
+        <div class="sidebar-item" id="nav-mitarbeiter" onclick="showSection('mitarbeiter')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="4" r="2"/><path d="M1 11c0-2 1.8-3.5 4-3.5s4 1.5 4 3.5"/><path d="M10 5v4M12 7h-4" stroke-linecap="round"/></svg>
+          Mitarbeiter
+        </div>
+        <div class="sidebar-item" id="nav-anleitung" onclick="showSection('anleitung')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="1" width="10" height="12" rx="1.2"/><path d="M4 4h6M4 6.5h6M4 9h4"/></svg>
+          Anleitungen
+        </div>
+        <div class="sidebar-item" id="nav-laufband" onclick="showSection('laufband')">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="12" height="6" rx="1.2"/><path d="M3 7h8M3 9h5"/></svg>
+          Laufband
+        </div>
+        <div class="sidebar-item" onclick="window.location.href='scanner.html'">
+          <svg class="s-ico" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5V3h2M11 5V3H9M3 9v2h2M11 9v2H9M5 5v4M7 4v6M9 5v4"/></svg>
+          Charge-Scanner
+        </div>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-user-pill">
+          <div class="sidebar-user-avatar" id="sidebar-user-avatar" title="Profilbild ändern" style="cursor:pointer;overflow:hidden;" onclick="document.getElementById('wl-avatar-input').click()">W</div>
+          <input type="file" id="wl-avatar-input" accept="image/*" style="display:none;">
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="sidebar-user-name">Wachenleiter</div>
+            <div class="sidebar-user-role">Wachenleiter</div>
+          </div>
+          <button class="sidebar-logout-btn" onclick="doLogout()" title="Abmelden">↪</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="portal-content">
+
+      <!-- ── DASHBOARD ── -->
+      <section class="content-section active" id="section-dashboard">
+        <div class="page-header">
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub" id="dashboard-greeting">Willkommen</div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-blue">
+            <div class="kpi-body">
+              <div class="kpi-value" id="kpi-last">–</div>
+              <div class="kpi-label">Letzte Bestellung</div>
+              <div class="kpi-last-sub-text" id="kpi-last-sub">Noch keine</div>
+            </div>
+            <div class="kpi-icon">📋</div>
+          </div>
+          <div class="kpi-card kpi-orange">
+            <div class="kpi-body">
+              <div class="kpi-value" id="kpi-total">0</div>
+              <div class="kpi-label">Bestellungen</div>
+            </div>
+            <div class="kpi-icon">📦</div>
+          </div>
+          <div class="kpi-card kpi-green">
+            <div class="kpi-body">
+              <div class="kpi-value" id="kpi-artikel">0</div>
+              <div class="kpi-label">Artikel im Lager</div>
+            </div>
+            <div class="kpi-icon">🗄️</div>
+          </div>
+          <div class="kpi-card kpi-red">
+            <div class="kpi-body">
+              <div class="kpi-value" id="kpi-verfall">0</div>
+              <div class="kpi-label">Verfallswarnungen</div>
+            </div>
+            <div class="kpi-icon">⚠️</div>
+          </div>
+        </div>
+
+        <!-- Letzte Bestellungen -->
+        <div class="table-wrap">
+          <div class="table-section-label">Letzte Lagerchecks</div>
+          <div id="dashboard-bestellungen"><div class="loading-state"><div class="spinner"></div></div></div>
+        </div>
+      </section>
+
+      <!-- ── BESTELLUNGEN ── -->
+      <section class="content-section" id="section-bestellungen">
+        <div class="page-header">
+          <div class="page-title">Bestellhistorie</div>
+          <div class="page-sub">Alle abgeschlossenen Lagerchecks</div>
+        </div>
+        <div class="bestellungen-list" id="bestellungen-list">
+          <div class="loading-state"><div class="spinner"></div></div>
+        </div>
+      </section>
+
+      <!-- ── CHARGEN & VERFALL ── -->
+      <section class="content-section" id="section-chargen">
+        <div class="page-header">
+          <div class="section-header-row">
+            <div>
+              <div class="page-title">Chargen & Verfall</div>
+              <div class="page-sub">Sortiert nach Bereichen</div>
+            </div>
+            <div class="section-header-filters">
+              <div class="filter-row">
+                <button class="filter-btn active" id="cf-alle"     onclick="setChargenFilter('alle')">Alle</button>
+                <button class="filter-btn"         id="cf-kritisch" onclick="setChargenFilter('kritisch')">🔴 ≤30 Tage</button>
+                <button class="filter-btn"         id="cf-ok"       onclick="setChargenFilter('ok')">🟢 OK</button>
+              </div>
+              <div class="filter-row">
+                <span class="sort-label">Sortierung:</span>
+                <button class="filter-btn active" id="sort-bereich"   onclick="setChargenSort('bereich')">🗄️ Bereich</button>
+                <button class="filter-btn"         id="sort-verfall"   onclick="setChargenSort('verfall')">📅 Verfall</button>
+                <button class="filter-btn"         id="sort-name"      onclick="setChargenSort('name')">🔤 Name</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="chargen-content"><div class="loading-state"><div class="spinner"></div></div></div>
+      </section>
+
+      <!-- ── ARTIKEL ── -->
+      <section class="content-section" id="section-artikel">
+        <div class="page-header">
+          <div class="section-header-nowrap">
+            <div><div class="page-title">Artikelverwaltung</div><div class="page-sub">Bearbeiten, hinzufügen, löschen</div></div>
+            <button class="btn btn-primary" onclick="openArtikelModal(null)" class="btn btn-primary btn-shrink0">+ Neuer Artikel</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <input type="text" class="form-input" id="artikel-search" placeholder="🔍 Artikel suchen..." oninput="filterArtikel(this.value)" class="form-input--max-300">
+            <select class="form-input" id="bereich-filter" onchange="filterArtikel()" class="form-input--max-200"><option value="">Alle Bereiche</option></select>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="table-card-mobile">
+              <thead><tr>
+                <th>Artikel</th><th>Standort</th><th>MIN / MAX</th><th>Aktionen</th>
+              </tr></thead>
+              <tbody id="artikel-tbody"><tr><td colspan="4"><div class="loading-state"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── BEREICHE ── -->
+      <section class="content-section" id="section-bereiche">
+        <div class="page-header">
+          <div class="section-header-nowrap">
+            <div><div class="page-title">Bereiche</div><div class="page-sub">Schränke, Regale und Lagerorte</div></div>
+            <button class="btn btn-primary" onclick="openBereichModal(null)" class="btn btn-primary btn-shrink0">+ Neuer Bereich</button>
+          </div>
+        </div>
+        <div class="bereich-list" id="bereich-list"><div class="loading-state"><div class="spinner"></div></div></div>
+      </section>
+
+      <!-- ── FOTOS ── -->
+      <section class="content-section" id="section-fotos">
+        <div class="page-header">
+          <div class="page-title">Fotos & Referenzbilder</div>
+          <div class="page-sub">Produktfotos und Lagerort-Fotos hochladen oder löschen</div>
+        </div>
+        <div class="fotos-filter-row">
+          <input type="text" id="foto-search" class="form-input" placeholder="Name oder LP suchen…" oninput="renderFotos()" class="form-input form-input--flex">
+          <select id="foto-filter" class="form-input form-input--auto" onchange="renderFotos()">
+            <option value="alle">Alle Artikel</option>
+            <option value="ohne-produkt">Ohne Produktfoto</option>
+            <option value="ohne-lager">Ohne Lagerortfoto</option>
+            <option value="ohne-beide">Ohne beide Fotos</option>
+            <option value="vollstaendig">Vollständig</option>
+          </select>
+          <select id="foto-bereich" class="form-input form-input--auto" onchange="renderFotos()">
+            <option value="">Alle Bereiche</option>
+          </select>
+          <select id="foto-sort" class="form-input form-input--auto" onchange="renderFotos()">
+            <option value="name">Name</option>
+            <option value="lp">Lagerort</option>
+          </select>
+        </div>
+        <div class="section-label mb-12" id="foto-grid-label">Artikel</div>
+        <div class="foto-grid" id="foto-grid"></div>
+        <input type="file" id="foto-file-input" accept="image/*" class="hidden" onchange="uploadFotoFromGrid()">
+      </section>
+
+      <!-- ── STOCKSWIPE FOTOS ── -->
+      <section class="content-section" id="section-ss-fotos">
+        <div class="page-header">
+          <div class="page-title">StockSwipe Fotos</div>
+          <div class="page-sub">Karten-Fotos für StockSwipe separat verwalten (überschreibt nicht das allgemeine Produktfoto)</div>
+        </div>
+        <div class="fotos-filter-row">
+          <input type="text" id="ss-foto-search" class="form-input" placeholder="Artikel suchen…" oninput="renderSsFotos()" class="form-input form-input--flex">
+          <select id="ss-foto-filter" class="form-input form-input--auto" onchange="renderSsFotos()">
+            <option value="alle">Alle Artikel</option>
+            <option value="ohne-ss">Ohne StockSwipe-Foto</option>
+            <option value="mit-ss">Mit StockSwipe-Foto</option>
+          </select>
+          <select id="ss-foto-bereich" class="form-input form-input--auto" onchange="renderSsFotos()">
+            <option value="">Alle Bereiche</option>
+          </select>
+        </div>
+        <div class="section-label mb-12" id="ss-foto-grid-label">Artikel</div>
+        <div class="foto-grid" id="ss-foto-grid"></div>
+        <input type="file" id="ss-foto-file-input" accept="image/*" class="hidden" onchange="uploadSsFoto()">
+      </section>
+
+      <!-- ── MITARBEITER ── -->
+      <section class="content-section" id="section-mitarbeiter">
+        <div class="page-header">
+          <div class="section-header-row">
+            <div>
+              <div class="page-title">Mitarbeiter verwalten</div>
+              <div class="page-sub">Mitarbeiter anlegen · PINs zurücksetzen</div>
+            </div>
+            <button class="btn btn-primary" onclick="openMaModal(null)" class="btn btn-primary btn-shrink0">+ Mitarbeiter anlegen</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr>
+                <th>Name</th><th>Erstellt</th><th>Aktionen</th>
+              </tr></thead>
+              <tbody id="ma-tbody">
+                <tr><td colspan="3"><div class="loading-state"><div class="spinner"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mitarbeiter Modal (anlegen + PIN zurücksetzen) -->
+      <div class="modal hidden" id="ma-modal" onclick="if(event.target===this)closeMaModal()">
+        <div class="modal-box">
+          <div class="modal-head">
+            <span class="modal-title" id="ma-modal-title">Mitarbeiter anlegen</span>
+            <button class="modal-close" onclick="closeMaModal()">✕</button>
+          </div>
+          <div class="modal-body">
+            <div id="ma-modal-fields">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Vorname</label>
+                  <input type="text" id="ma-vorname" class="form-input" placeholder="Max" autocapitalize="words">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nachname</label>
+                  <input type="text" id="ma-nachname" class="form-input" placeholder="Mustermann" autocapitalize="words">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" id="ma-pin-label">PIN (4 Stellen)</label>
+              <div class="pin-dots-row">
+                <div class="pin-dot" id="ma-pdot-0"></div>
+                <div class="pin-dot" id="ma-pdot-1"></div>
+                <div class="pin-dot" id="ma-pdot-2"></div>
+                <div class="pin-dot" id="ma-pdot-3"></div>
+              </div>
+              <div class="ma-pin-sub-text" id="ma-pin-sub">PIN eingeben</div>
+              <div class="pin-grid-wrap">
+                <div class="pin-key" onclick="maPinKey('1')">1</div><div class="pin-key" onclick="maPinKey('2')">2</div><div class="pin-key" onclick="maPinKey('3')">3</div>
+                <div class="pin-key" onclick="maPinKey('4')">4</div><div class="pin-key" onclick="maPinKey('5')">5</div><div class="pin-key" onclick="maPinKey('6')">6</div>
+                <div class="pin-key" onclick="maPinKey('7')">7</div><div class="pin-key" onclick="maPinKey('8')">8</div><div class="pin-key" onclick="maPinKey('9')">9</div>
+                <div class="pin-key del" onclick="maPinDel()">⌫</div><div class="pin-key" onclick="maPinKey('0')">0</div>
+                <div class="pin-key pin-key--blank"></div>
+              </div>
+            </div>
+            <div id="ma-modal-error" class="form-error-text"></div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn btn-ghost modal-foot-btn-cancel" onclick="closeMaModal()">Abbrechen</button>
+            <button class="btn btn-primary modal-foot-btn-primary" id="ma-save-btn" onclick="saveMitarbeiter()">Speichern</button>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ── LIVE SESSIONS ── -->
+      <section class="content-section" id="section-sessions">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Live Sessions <span id="session-live-badge" class="la-chip session-live-badge" style="display:none;"><span class="dot"></span>Live</span></div>
+            <div class="page-sub">Aktuelle und vergangene Lagerchecks</div>
+          </div>
+        </div>
+
+        <!-- Active session (echte Firestore-Daten) -->
+        <div id="sessions-active-card" class="sessions-active-section" style="display:none;">
+          <div class="la-card outline session-active-inner">
+            <div class="session-header-row">
+              <span class="la-chip ok session-live-chip"><span class="dot"></span>Live</span>
+              <span id="sessions-active-meta" class="session-meta"></span>
+              <button onclick="resetSession()" class="session-reset-btn">🗑 Session zurücksetzen</button>
+            </div>
+            <div class="session-sub-label">Teilnehmer</div>
+            <div id="sessions-active-teilnehmer" class="session-teilnehmer-row"></div>
+            <div class="session-sub-label">Bereiche</div>
+            <div id="sessions-active-bereiche" class="session-bereiche-col"></div>
+          </div>
+        </div>
+
+        <!-- No active session -->
+        <div id="sessions-no-active" class="sessions-no-active-section" style="display:none;">
+          <div class="la-card outline vk-no-active-card">
+            <div class="vk-no-active-emoji">💤</div>
+            <div class="vk-no-active-title">Keine aktive Session</div>
+            <div class="vk-no-active-sub">Wenn ein Mitarbeiter eine Lagerbestellung startet, erscheint sie hier live.</div>
+          </div>
+        </div>
+
+        <!-- Recent sessions -->
+        <div class="analytics-section-label">Vergangene Bestellungen</div>
+        <div class="la-card outline la-card--no-pad">
+          <table>
+            <thead><tr>
+              <th class="lin-th">Datum</th>
+              <th class="lin-th">Mitarbeiter</th>
+              <th class="lin-th" style="text-align:right;">Bestellungen</th>
+            </tr></thead>
+            <tbody id="sessions-past-tbody">
+              <tr><td class="lin-td" colspan="3" style="text-align:center;color:var(--ink-3);font-size:12px;">Wird geladen…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── VERFALLSKALENDER ── -->
+      <section class="content-section" id="section-verfallskalender">
+        <div class="page-header">
+          <div class="vk-header-row">
+            <div>
+              <div class="page-title">Verfallswarnungen
+                <span id="vk-badge" class="la-chip low vk-badge" style="display:none;"><span class="dot"></span><span id="vk-badge-count">0</span></span>
+              </div>
+              <div class="page-sub">Übersicht aller Chargen · Liste und Kalender</div>
+            </div>
+            <div class="vk-view-actions">
+              <div class="vk-view-toggle">
+                <button id="vk-btn-liste" onclick="setVkView('liste')" class="vk-view-btn vk-view-btn--active">Liste</button>
+                <button id="vk-btn-kalender" onclick="setVkView('kalender')" class="vk-view-btn vk-view-btn--inactive">Kalender</button>
+              </div>
+              <a href="scanner.html" class="la-btn ghost sm">+ Charge erfassen</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bucket summary (beide Views) -->
+        <div class="vk-bucket-grid">
+          <div class="la-card outline vk-bucket-card-wrap">
+            <div class="vk-bucket-accent vk-bucket-accent--crit"></div>
+            <div class="vk-bucket-label">Diese Woche</div>
+            <div class="vk-bucket-count">
+              <span id="vk-count-akut" class="vk-bucket-num vk-bucket-num--crit">–</span>
+              <span class="vk-bucket-sub">Akut · ≤ 7 Tage</span>
+            </div>
+          </div>
+          <div class="la-card outline vk-bucket-card-wrap">
+            <div class="vk-bucket-accent vk-bucket-accent--low"></div>
+            <div class="vk-bucket-label">Diesen Monat</div>
+            <div class="vk-bucket-count">
+              <span id="vk-count-monat" class="vk-bucket-num vk-bucket-num--low">–</span>
+              <span class="vk-bucket-sub">≤ 30 Tage</span>
+            </div>
+          </div>
+          <div class="la-card outline vk-bucket-card-wrap">
+            <div class="vk-bucket-accent vk-bucket-accent--neutral"></div>
+            <div class="vk-bucket-label">Folgemonate</div>
+            <div class="vk-bucket-count">
+              <span id="vk-count-spaeter" class="vk-bucket-num">–</span>
+              <span class="vk-bucket-sub">&gt; 30 Tage</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LISTEN-VIEW -->
+        <div id="vk-view-liste">
+          <div class="vk-timeline-label">Nächste Verfälle</div>
+          <div id="vk-timeline-list" class="la-card outline la-card--no-pad">
+            <div class="loading-state"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- KALENDER-VIEW -->
+        <div id="vk-view-kalender" class="hidden">
+          <div class="la-card outline vk-heatmap-card">
+            <div class="vk-heatmap-header">
+              <div class="vk-heatmap-title-str">6-Monats-Übersicht</div>
+              <div class="vk-heatmap-spacer"></div>
+              <div class="vk-heatmap-legend">
+                <div class="vk-legend-item"><span class="vk-legend-dot" style="background:var(--crit)"></span>Akut ≤7T</div>
+                <div class="vk-legend-item"><span class="vk-legend-dot" style="background:var(--low)"></span>≤30T</div>
+                <div class="vk-legend-item"><span class="vk-legend-dot" style="background:#F0A12E"></span>&gt;30T</div>
+                <div class="vk-legend-item"><span class="vk-legend-dot" style="background:var(--brand)"></span>Heute</div>
+              </div>
+            </div>
+            <div id="vk-heatmap-grid" class="vk-heatmap-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── KONTEN & ROLLEN ── -->
+      <section class="content-section" id="section-rollen">
+        <div class="page-header">
+          <div class="rollen-section-row">
+            <div>
+              <div class="page-title">Konten &amp; Rollen</div>
+              <div class="page-sub">Berechtigungen und Benutzerkonten verwalten</div>
+            </div>
+            <div class="rollen-actions-row">
+              <a href="admin.html" class="la-btn ghost sm">Konten verwalten →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Such-Feld -->
+        <div class="rollen-right-header-wrap">
+          <input type="text" id="rollen-search" class="l-input rollen-search-input" placeholder="Konto suchen…" oninput="filterRollenSearch()">
+        </div>
+
+        <div class="rollen-layout" id="rollen-layout">
+          <!-- Rollen-Panel (links) -->
+          <div class="la-card outline la-card--outline-start">
+            <div class="rollen-panel-label-wrap">Rollen</div>
+            <div id="rollen-liste" class="rollen-list-pad">
+              <div class="rollen-list-placeholder">Wird geladen…</div>
+            </div>
+          </div>
+
+          <!-- User-Panel (rechts) -->
+          <div>
+            <div class="rollen-user-header" id="rollen-user-header">Konten</div>
+            <div class="la-card outline la-card--no-pad">
+              <table>
+                <thead><tr>
+                  <th class="lin-th">Name</th>
+                  <th class="lin-th">E-Mail</th>
+                  <th class="lin-th" style="width:120px;">Rolle</th>
+                  <th class="lin-th" style="width:100px;">Erstellt</th>
+                </tr></thead>
+                <tbody id="rollen-user-tbody">
+                  <tr><td class="lin-td" colspan="4" style="text-align:center;color:var(--ink-3);font-size:12px;">Wird geladen…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── STATISTIK ── -->
+      <section class="content-section" id="section-statistik">
+        <div class="page-header">
+          <div class="stat-header-row" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+            <div>
+              <div class="page-title">Statistik</div>
+              <div class="page-sub">Auswertung aller Lagerchecks</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
+              <select id="stat-zeitraum" class="form-input" style="height:32px;padding:0 10px;font-size:0.78rem;" onchange="renderStatistik()">
+                <option value="alle">Alle Zeiträume</option>
+                <option value="monat">Dieser Monat</option>
+                <option value="quartal">Dieses Quartal</option>
+                <option value="jahr">Dieses Jahr</option>
+              </select>
+              <button class="btn btn-ghost" style="height:32px;font-size:0.78rem;" onclick="exportStatistikCSV()">📊 Excel/CSV</button>
+              <button class="btn btn-ghost" style="height:32px;font-size:0.78rem;" onclick="exportStatistikPDF()">📄 PDF</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Row -->
+        <div class="kpi-row">
+          <div class="kpi-card"><div class="kpi-label">Lagerbestellungen gesamt</div><div class="kpi-value" id="stat-total">–</div></div>
+          <div class="kpi-card"><div class="kpi-label">Nachbestellungen</div><div class="kpi-value" id="stat-orders">–</div></div>
+          <div class="kpi-card"><div class="kpi-label">Ø pro Check</div><div class="kpi-value" id="stat-avg">–</div></div>
+
+        </div>
+
+        <!-- Top Artikel -->
+        <div class="stat-section-mb">
+          <div class="table-wrap">
+            <div class="stat-table-header">🔴 Meistbestellte Artikel</div>
+            <div id="stat-top-artikel" class="stat-body-pad">
+              <div class="loading-state"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verlauf -->
+        <div class="table-wrap table-wrap--mb">
+          <div class="stat-table-header-row">
+            <div class="stat-table-title">📅 Bestellungen pro Woche</div>
+            <div class="stat-table-sub">Letzte 12 Wochen</div>
+          </div>
+          <div class="stat-chart-wrap">
+            <canvas id="stat-chart" height="80"></canvas>
+          </div>
+        </div>
+
+        <!-- MIN/MAX Analyse -->
+        <div class="table-wrap">
+          <div class="stat-table-header">⚡ MIN/MAX Empfehlungen
+            <div class="stat-table-hint">Artikel die regelmäßig nachbestellt werden – MIN erhöhen?</div>
+          </div>
+          <div id="stat-empfehlungen" class="stat-body-pad">
+            <div class="loading-state"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ── ANLEITUNGEN ── -->
+      <section class="content-section" id="section-anleitung">
+        <div class="page-header">
+          <div class="page-title">Anleitungen</div>
+          <div class="page-sub">Screenshots für die Mitarbeiter-Anleitungen hochladen</div>
+        </div>
+        <div class="anleitung-list" id="anleitung-list">
+          <div class="loading-state"><div class="spinner"></div></div>
+        </div>
+        <input type="file" id="help-foto-input" accept="image/*" class="hidden" onchange="uploadHelpFoto(this)">
+      </section>
+
+      <!-- ── LAUFBAND ── -->
+      <section class="content-section" id="section-laufband">
+        <div class="page-header">
+          <div class="page-title">Laufband</div>
+          <div class="page-sub">Info-Ticker für alle eingeloggten Mitarbeiter</div>
+        </div>
+        <div class="laufband-section">
+          <div class="form-group">
+            <label class="form-label">Nachricht</label>
+            <textarea id="laufband-input" class="form-input" rows="3" placeholder="z.B. Neue Richtlinie: Kühlschrank täglich prüfen – Ablaufdaten beachten!" oninput="updateLaufbandPreview()" class="form-input form-textarea"></textarea>
+            <div class="form-hint">Wird als scrollendes Laufband oben auf jeder Seite angezeigt. Leer lassen zum Ausblenden.</div>
+          </div>
+          <div>
+            <div class="form-label laufband-preview-label">Vorschau</div>
+            <div class="laufband-preview">
+              <div class="laufband-preview-badge">Info</div>
+              <div class="laufband-preview-content">
+                <span id="laufband-preview-text"></span>
+              </div>
+            </div>
+          </div>
+          <div class="laufband-actions">
+            <button class="btn btn-primary modal-foot-btn-primary" onclick="saveLaufband()">💾 Speichern</button>
+            <button class="btn btn-ghost modal-foot-btn-cancel" onclick="clearLaufband()">✕ Löschen</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ARTIKEL MODAL -->
+  <div id="artikel-modal" class="modal hidden" onclick="if(event.target===this)closeArtikelModal()">
+    <div class="modal-box">
+      <div class="modal-head"><span class="modal-title" id="artikel-modal-title">Artikel</span><button class="modal-close" onclick="closeArtikelModal()">✕</button></div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-id">
+        <div class="form-group"><label class="form-label">Name *</label><input type="text" class="form-input" id="edit-name" placeholder="Artikelname"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">LP</label><input type="text" class="form-input" id="edit-lp" placeholder="S.2.1.3"></div>
+          <div class="form-group"><label class="form-label">Standort</label><input type="text" class="form-input" id="edit-location" placeholder="S2.1.3"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Bereich</label><select class="form-input" id="edit-bereich"></select></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">MIN</label><input type="number" class="form-input" id="edit-min" placeholder="1" min="0"></div>
+          <div class="form-group"><label class="form-label">MIN Einheit</label><input type="text" class="form-input" id="edit-minE" placeholder="Stk/VE/P"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">MAX</label><input type="number" class="form-input" id="edit-max" placeholder="5" min="0"></div>
+          <div class="form-group"><label class="form-label">MAX Einheit</label><input type="text" class="form-input" id="edit-maxE" placeholder="Stk/VE/P"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Aliases</label><input type="text" class="form-input" id="edit-aliases" placeholder="Kommagetrennt"></div>
+        <div class="form-group"><label class="form-label">Hinweis</label><input type="text" class="form-input" id="edit-hinweis" placeholder="z.B. Siehe R.3.1.4."></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary modal-foot-btn-primary" onclick="saveArtikel()">💾 Speichern</button>
+        <button class="btn btn-ghost" onclick="closeArtikelModal()">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BEREICH MODAL -->
+  <div id="bereich-modal" class="modal hidden" onclick="if(event.target===this)closeBereichModal()">
+    <div class="modal-box modal-box--sm">
+      <div class="modal-head"><span class="modal-title" id="bereich-modal-title">Bereich</span><button class="modal-close" onclick="closeBereichModal()">✕</button></div>
+      <div class="modal-body">
+        <input type="hidden" id="bereich-edit-id">
+        <div class="form-group"><label class="form-label">Name *</label><input type="text" class="form-input" id="bereich-edit-name" placeholder="z.B. Lager – Schrank 7"></div>
+        <div class="form-group"><label class="form-label">Reihenfolge</label><input type="number" class="form-input" id="bereich-edit-reihenfolge" placeholder="14" min="1"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary modal-foot-btn-primary" onclick="saveBereich()">💾 Speichern</button>
+        <button class="btn btn-ghost" onclick="closeBereichModal()">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BESTELLUNG DETAIL MODAL -->
+  <div id="detail-modal" class="modal hidden" onclick="if(event.target===this)closeDetailModal()">
+    <div class="modal-box">
+      <div class="modal-head"><span class="modal-title" id="detail-modal-title">Lagercheck</span><button class="modal-close" onclick="closeDetailModal()">✕</button></div>
+      <div class="modal-body" id="detail-modal-body"></div>
+      <div class="modal-foot">
+        <button class="btn btn-primary modal-foot-btn-primary" id="btn-pdf" onclick="this.disabled=true;this.textContent='Wird erstellt…';generatePDF().catch(e=>{console.error(e);alert('PDF-Fehler: '+e.message);}).finally(()=>{this.disabled=false;this.textContent='📄 PDF';})">📄 PDF</button>
+        <button class="btn btn-ghost" id="btn-medikamente-pdf" style="display:none;" onclick="this.disabled=true;this.textContent='…';generateMedikamentePDF().catch(e=>{alert('Fehler: '+e.message);}).finally(()=>{this.disabled=false;this.textContent='💊 Medikamente';})">💊 Medikamente</button>
+        <button class="btn btn-ghost" onclick="closeDetailModal()">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- pdf-lib: PDF-Generierung von Grund auf (Lager + Medikamente) -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+  <script type="module" src="../js/portal.js"></script>
+  <script src="../js/pwa.js"></script>
+  <script>
+    (function() {
+      const L = {}; // Wachen-Labels hier eintragen (z. B. w1_meinstadt:'W1 Meine Stadt')
+      const w = localStorage.getItem('activeWache');
+      const city = w && L[w] ? L[w].split(' ').slice(1).join(' ') : '';
+      const label = w && L[w] ? L[w] : '';
+      const p = document.getElementById('wache-pill');
+      if (p && city) { p.textContent = city; p.classList.remove('hidden'); p.onclick = function(){ localStorage.removeItem('activeWache'); location.href='../index.html'; }; }
+      const wsn = document.getElementById('sidebar-ws-name');
+      const wss = document.getElementById('sidebar-ws-sub');
+      if (wsn && label) wsn.textContent = label;
+      if (wss && city) wss.textContent = city;
+    })();
+  </script>
+</body>
+</html>

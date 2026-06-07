@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#F26B2E">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LAGER//APP">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LAGER//APP – Lagersuche</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/index.css">
+  <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <header class="la-nav">
+    <div class="nav-left">
+      <span class="la-wordmark">
+        LAGER<span class="slash">//</span>APP
+        <span class="dot hidden" id="sync-dot" title="Live"></span>
+      </span>
+      <button class="wache-pill hidden" id="wache-pill" onclick="showWachenScreen()" title="Wache wechseln"></button>
+    </div>
+    <div class="nav-right">
+      <div class="la-sync-pill hide-mobile hidden" id="sync-pill">
+        <span class="dot"></span>
+        <span>Synchron</span>
+      </div>
+      <button class="la-bell-btn" id="theme-toggle" title="Hell/Dunkel">☀️</button>
+
+      <!-- Auth-Pill: Gast -->
+      <div id="auth-pill-guest" class="hidden">
+        <a href="pages/login.html" class="auth-pill-link">
+          <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="8" width="14" height="10" rx="2"/>
+            <path d="M7 8V6a3 3 0 0 1 6 0v2"/>
+          </svg>
+          Anmelden
+        </a>
+      </div>
+
+      <!-- Auth-Pill: Angemeldet -->
+      <div id="auth-pill-user" class="hidden">
+        <a id="auth-pill-link" href="pages/mitarbeiter.html" class="auth-pill-link auth-pill-link--user">
+          <span id="auth-pill-avatar" class="auth-pill-avatar"></span>
+          <span id="auth-pill-label">Hub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── OFFLINE-BANNER ── -->
+  <div id="offline-banner" class="offline-banner hidden"></div>
+
+  <!-- ── HERO ── -->
+  <div class="la-hero">
+    <div class="la-greeting">
+      Was suchst du<span id="greeting-name-wrap" class="hidden">,
+        <span class="greeting-name-accent" id="greeting-name"></span></span>?
+    </div>
+    <div class="la-wache-status-row">
+      <img class="la-wache-status-img hidden" id="wache-status-img" src="" alt=""
+           onclick="showWachenScreen()" title="Wache wechseln">
+      <div class="la-greeting-sub" id="status-text">Datenbank wird geladen…</div>
+    </div>
+
+    <!-- Suche -->
+    <div class="la-search-wrap">
+      <span class="la-search-icon">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+          <circle cx="9" cy="9" r="6"/>
+          <path d="m17 17-3.5-3.5"/>
+        </svg>
+      </span>
+      <input type="text" id="search-input" class="la-search-input"
+        placeholder="Artikel, LP, Alias…"
+        autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="la-search-scan hidden" id="search-clear">✕</button>
+      <button class="la-search-scan" id="scan-btn" title="QR/Barcode scannen">
+        <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+          <path d="M3 7V4h3M17 7V4h-3M3 13v3h3M17 13v3h-3"/>
+          <path d="M3 10h14"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Filter-Chips (dynamisch via JS) -->
+    <div class="la-filters" id="filter-chips">
+      <button class="la-filter-chip active" data-filter="all">Alle</button>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <main class="la-main">
+
+    <!-- Laden -->
+    <div id="loading-state" class="la-loading">
+      <div class="spinner"></div>
+      <span class="loading-text">Verbinde mit Firebase…</span>
+    </div>
+
+    <!-- Ergebnisse -->
+    <div id="search-results" class="la-results hidden"></div>
+
+    <!-- Leer-Zustand -->
+    <div id="empty-state" class="la-empty hidden">
+      <div class="la-empty-icon">🔍</div>
+      <div class="la-empty-title">Kein Artikel gefunden</div>
+      <div class="la-empty-sub">Versuche einen anderen Begriff oder Alias</div>
+    </div>
+
+    <!-- Bereiche -->
+    <div id="bereiche-section" class="hidden">
+      <div class="la-sec-head">
+        <span class="la-sec-label">Bereiche</span>
+        <span class="la-sec-link" id="bereiche-count-label">
+          <span id="bereiche-total">–</span> gesamt
+          <svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 5l5 5-5 5"/>
+          </svg>
+        </span>
+      </div>
+      <div class="la-bereiche-grid" id="bereiche-grid"></div>
+    </div>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="la-footer">
+    <span class="footer-credit" id="footer-credit">LAGER//APP · 2026</span>
+  </footer>
+
+  <!-- ── FOTO-MODAL ── -->
+  <div id="photo-modal" class="la-modal-backdrop hidden">
+    <div class="la-modal-box">
+      <div class="la-modal-header">
+        <span id="modal-title" class="la-modal-title"></span>
+        <button class="la-modal-close">✕</button>
+      </div>
+      <img id="modal-img" class="la-modal-img" src="" alt="">
+      <div class="modal-caption">Soll-Zustand Lagerort</div>
+    </div>
+  </div>
+
+  <!-- ── LAGER-SCAN OVERLAY (Lagerort-Suche per Kamera) ── -->
+  <div id="lager-scan-overlay" class="lager-scan-overlay hidden">
+    <div class="ls-video-wrap">
+      <video id="lager-scan-video" class="ls-video" playsinline autoplay muted></video>
+
+      <!-- Status-Leiste oben -->
+      <div class="ls-header">
+        <div class="ls-status-pill">
+          <span class="ls-pulse-dot"></span>
+          <span id="lager-scan-status">Artikel-Code scannen</span>
+        </div>
+        <button id="lager-scan-close" class="ls-close-btn">✕</button>
+      </div>
+
+      <!-- Suchraster -->
+      <div class="ls-vf-wrap">
+        <div class="ls-vf">
+          <svg class="ls-corner ls-corner--tl" viewBox="0 0 32 32" fill="none">
+            <path d="M0 24V0h24" stroke="#F26B2E" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg class="ls-corner ls-corner--tr" viewBox="0 0 32 32" fill="none">
+            <path d="M32 24V0H8" stroke="#F26B2E" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg class="ls-corner ls-corner--bl" viewBox="0 0 32 32" fill="none">
+            <path d="M0 8v24h24" stroke="#F26B2E" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg class="ls-corner ls-corner--br" viewBox="0 0 32 32" fill="none">
+            <path d="M32 8v24H8" stroke="#F26B2E" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="ls-scanline"></div>
+        </div>
+        <div class="ls-code-hint">Code zentrieren · Halten</div>
+      </div>
+    </div>
+
+    <!-- Ergebnis-Panel unten -->
+    <div class="ls-bottom">
+      <div class="ls-drag-handle"></div>
+      <div id="lager-scan-hint" class="ls-hint-text">Barcode oder LP-Etikett vor die Kamera halten</div>
+
+      <div id="lager-scan-result" class="ls-result hidden">
+        <div id="lager-scan-photo" class="ls-result-photo">📦</div>
+        <div class="ls-result-info">
+          <div id="lager-scan-art-name" class="ls-art-name"></div>
+          <div id="lager-scan-lp"       class="ls-lp"></div>
+          <div id="lager-scan-bereich"  class="ls-bereich"></div>
+        </div>
+      </div>
+
+      <div id="lager-scan-not-found" class="ls-not-found hidden">
+        <div class="ls-not-found-icon">❓</div>
+        <div class="ls-not-found-text">Artikel nicht gefunden</div>
+        <div id="lager-scan-raw" class="ls-raw"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOGIN-WALL (Bottom-Sheet bei geschützten Aktionen) ── -->
+  <div id="login-wall" class="login-wall-backdrop hidden">
+    <div class="login-wall-sheet">
+      <div class="login-wall-handle"></div>
+
+      <div class="login-wall-header">
+        <div class="login-wall-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="11" width="14" height="9" rx="2"/>
+            <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="login-wall-title">Anmelden erforderlich</div>
+          <div class="login-wall-context-text" id="login-wall-context">für diese Aktion</div>
+        </div>
+      </div>
+
+      <div class="login-wall-info">
+        Lagersuche bleibt für alle offen. Anmeldung mit <strong>Name + PIN</strong> nur für
+        Bestellungen, Verfallsscan und Bestand-Bearbeitung.
+      </div>
+
+      <div class="login-wall-actions">
+        <button id="login-wall-cancel" class="login-wall-cancel">Abbrechen</button>
+        <a id="login-wall-btn" href="pages/login.html?tab=mitarbeiter" class="login-wall-cta">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="8" width="14" height="10" rx="2"/>
+            <path d="M7 8V6a3 3 0 0 1 6 0v2"/>
+          </svg>
+          Mit Name &amp; PIN anmelden
+        </a>
+      </div>
+
+      <div class="login-wall-footer">
+        Kein PIN? <strong class="login-wall-brand">Wachenleiter fragen</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WACHEN-AUSWAHL ── -->
+  <div class="wachen-overlay" id="wachen-overlay">
+    <div class="wachen-inner">
+      <div class="wachen-logo">LAGER<span class="slash">//</span>APP</div>
+      <div class="wachen-sub">Wache auswählen</div>
+      <div class="wachen-grid" id="wachen-grid">
+        <!-- Wachen-Tiles werden dynamisch aus WACHEN (firebase-config.js) generiert -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // Wachen-Labels aus WACHEN (firebase-config.js) ableiten
+      const WACHEN_LABELS = {};
+      const WACHEN_CITIES = {};
+      const overlay = document.getElementById('wachen-overlay');
+      const active  = localStorage.getItem('activeWache');
+
+      if (active && WACHEN_LABELS[active]) {
+        overlay.style.display = 'none';
+      } else {
+        overlay.style.display = 'flex';
+      }
+
+      const fc = document.getElementById('footer-credit');
+      if (fc) fc.textContent = 'LAGER//APP • 2026';
+      if (active && WACHEN_CITIES[active]) {
+        document.title = 'LAGER//APP – Rettungswache ' + WACHEN_CITIES[active];
+      }
+
+      window.selectWache = function (id) {
+        localStorage.setItem('activeWache', id);
+        location.reload();
+      };
+
+      window.showWachenScreen = function () {
+        overlay.style.display = 'flex';
+      };
+    })();
+  </script>
+
+  <!-- ── VERSION 3.0 POPUP ── -->
+  <div class="lagerapp-overlay" id="version-popup-overlay">
+    <div class="lagerapp-popup">
+
+      <button class="close-btn" id="popup-close-btn">×</button>
+
+      <h1>
+        Viel Spaß bei<br>
+        <span>Version 3.0</span>
+      </h1>
+
+      <div class="preview-images">
+        <img src="icons/produktkarte.png" alt="Produktkarte">
+        <img src="icons/verfallscheck.png" alt="Verfallscheck">
+      </div>
+
+      <div class="features-box">
+
+        <h2>✨ Neu in Version 3.0</h2>
+
+        <div class="popup-feature">
+          <div class="popup-icon popup-icon--orange">📅</div>
+          <div>
+            <strong>Verfallscheck</strong>
+            <p>Du hast jeden Tag die Kontrolle, ob etwas abläuft.</p>
+          </div>
+        </div>
+
+        <div class="popup-feature">
+          <div class="popup-icon popup-icon--green">👥</div>
+          <div>
+            <strong>Gruppen Bestellungen</strong>
+            <p>Du kannst mit der kompletten Schicht zeitgleich und live das Lager bestellen.</p>
+          </div>
+        </div>
+
+        <div class="popup-feature">
+          <div class="popup-icon popup-icon--blue">👉</div>
+          <div>
+            <strong>StockSwipe</strong>
+            <p>Bestelle das Lager alleine im Tinder Style.</p>
+          </div>
+        </div>
+
+        <div class="popup-feature">
+          <div class="popup-icon popup-icon--purple">📦</div>
+          <div>
+            <strong>Verfall Scanner</strong>
+            <p>Scanne schnell und unkompliziert neue Ware ein, um lästiges Prüfen auf Verfall zu vermeiden.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="popup-info-section">
+        <div class="popup-info-box">
+          <div class="popup-info-icon popup-info-icon--orange">🔒</div>
+          <div>
+            <strong>Noch sicherer mit eigenen Zugangsdaten.</strong>
+            <p>Frage gleich deinen Wachenleiter.</p>
+          </div>
+        </div>
+
+        <div class="popup-info-box">
+          <div class="popup-info-icon popup-info-icon--green">🟢</div>
+          <div>
+            <strong>Hast du Fehler gefunden?</strong>
+            <p>Dann ab damit in den WhatsApp Channel.</p>
+          </div>
+        </div>
+      </div>
+
+      <button class="popup-start-btn" id="popup-start-btn">
+        Alles klar, los geht's!
+      </button>
+
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const VERSION_KEY = 'lagerapp-popup-seen-v3';
+      const overlay = document.getElementById('version-popup-overlay');
+
+      // Popup nur einmal pro Version anzeigen
+      if (localStorage.getItem(VERSION_KEY)) {
+        overlay.style.display = 'none';
+      }
+
+      function closePopup() {
+        overlay.style.display = 'none';
+        localStorage.setItem(VERSION_KEY, '1');
+      }
+
+      document.getElementById('popup-close-btn').addEventListener('click', closePopup);
+      document.getElementById('popup-start-btn').addEventListener('click', closePopup);
+
+      // Klick auf den Hintergrund schließt auch
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closePopup();
+      });
+    })();
+  </script>
+
+  <!-- Einziges Modul für diese Seite -->
+  <script type="module" src="js/search.js"></script>
+  <script src="js/pwa.js"></script>
+  <script>
+    // Alten SW mit falschem Scope entfernen (z.B. nach Domain-Wechsel)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        const base = window.location.pathname.startsWith('/LagerAppWachen') ? '/LagerAppWachen' : '';
+        const expectedScope = `${window.location.origin}${base}/`;
+        regs.forEach(reg => {
+          if (reg.scope !== expectedScope) {
+            console.log('[LagerApp] Alter SW entfernt:', reg.scope);
+            reg.unregister();
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
